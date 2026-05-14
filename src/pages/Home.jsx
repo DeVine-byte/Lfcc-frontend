@@ -92,34 +92,50 @@ function Home() {
     <div className="bg-black min-h-screen text-white">
 
       {/* ================= NAVBAR ================= */}
-      <nav className="bg-black border-b border-zinc-800 sticky top-0 z-50">
-
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-
-          <div className="flex items-center gap-3">
-
-            <img
-              src="/logo.png"
-              className="w-12 h-12 rounded-full"
-            />
-
-            <h1 className="text-purple-400 font-bold text-xl">
+      <nav>
+           <h1 className="text-purple-400 font-bold text-lg md:text-xl">
               Love Foundation Christian Center
             </h1>
-
           </div>
 
-          <div className="flex gap-6 text-zinc-300">
+          {/* Desktop Menu */}
+          <div className="hidden md:flex gap-6 text-zinc-300">
+            <a href="/" className="hover:text-purple-400 transition">
+              Home
+            </a>
 
-            <Link to="/">Home</Link>
-
-            <Link to="/about">About</Link>
-
+            <a href="/about" className="hover:text-purple-400 transition">
+              About
+            </a>
           </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => {
+              const menu = document.getElementById("mobileMenuHome");
+              menu.classList.toggle("hidden");
+            }}
+            className="md:hidden text-white text-3xl"
+          >
+            ☰
+          </button>
 
         </div>
-      </nav>
 
+        {/* Mobile Menu */}
+        <div
+          id="mobileMenuHome"
+          className="hidden md:hidden flex flex-col gap-4 px-6 pb-4 text-zinc-300"
+        >
+          <a href="/" className="hover:text-purple-400 transition">
+            Home
+          </a>
+
+          <a href="/about" className="hover:text-purple-400 transition">
+            About
+          </a>
+        </div>
+      </nav>
       {/* ================= HERO ================= */}
       <section className="py-16 px-4">
 
