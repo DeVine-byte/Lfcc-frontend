@@ -173,14 +173,13 @@ function About() {
           <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-12 md:p-14">
 
             <h2 className="text-3xl font-bold text-purple-400 mb-8">
-              ❤️ Our Foundation
+              Our Foundation
             </h2>
 
             <p className="text-zinc-400 leading-9 max-w-3xl">
-              Love Foundation Christian Centre is the Church arm of
-              Love Foundation International Ministry with branch
-              Churches and University Campus Fellowships in states
-              within Nigeria and outside Nigeria.
+              Reaching every peoeple group with the love of God revealed in christ Jesus,
+              winning souls amd making disciples that are exactly like him,
+              to the the glory of God
             </p>
 
           </div>
@@ -189,7 +188,7 @@ function About() {
           <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-12 md:p-14">
 
             <h2 className="text-3xl font-bold text-purple-400 mb-8">
-              🙏 Our Leadership
+              Our Leadership
             </h2>
 
             <p className="text-zinc-400 leading-9 max-w-3xl">
@@ -212,7 +211,7 @@ function About() {
           <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-12 md:p-14">
 
             <h2 className="text-3xl font-bold text-purple-400 mb-8">
-              🌍 Global Impact
+              Global Impact
             </h2>
 
             <p className="text-zinc-400 leading-9 max-w-3xl">
@@ -235,7 +234,7 @@ function About() {
           <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-12 md:p-14">
 
             <h2 className="text-3xl font-bold text-purple-400 mb-8">
-              📖 Our Journey
+               Our Journey
             </h2>
 
             <p className="text-zinc-400 leading-9 max-w-3xl">
@@ -287,7 +286,7 @@ function About() {
             <div className="bg-zinc-900 rounded-3xl p-12 border border-zinc-800">
 
               <h3 className="text-2xl font-bold mb-8">
-                ⛪ Sunday Worship Services @ LFCC Benin
+                Sunday Worship Services @ LFCC Benin
               </h3>
 
               <div className="space-y-8 text-zinc-400 leading-8">
@@ -320,7 +319,7 @@ function About() {
             <div className="bg-zinc-900 rounded-3xl p-12 border border-zinc-800">
 
               <h3 className="text-2xl font-bold mb-8">
-                📖 Wednesday Bible Study
+                 Wednesday Bible Study
               </h3>
 
               <div className="text-zinc-400 leading-8">
