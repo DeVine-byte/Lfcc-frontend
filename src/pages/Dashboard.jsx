@@ -106,7 +106,7 @@ function Dashboard() {
 
       const data = await res.json();
 
-      alert(data);
+      alert(JSON.stringify(data));
 
       setMessage({
         title: "",
