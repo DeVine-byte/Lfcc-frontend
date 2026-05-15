@@ -29,7 +29,7 @@ function App() {
 
         <Route
           path="/admin-login"
-          element={<Login />}
+          element={<AdminLogin />}
         />
 
         <Route
