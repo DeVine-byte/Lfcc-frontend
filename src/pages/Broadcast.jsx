@@ -104,16 +104,27 @@ function Broadcast() {
 
   return (
     <div className="bg-black min-h-screen text-white">
-
       {/* ================= NAVBAR ================= */}
-      <nav className="border-b border-zinc-800">
+      <nav className="border-b border-zinc-800 sticky top-0 z-50 bg-black">
 
         <div className="max-w-7xl mx-auto flex justify-between items-center px-6 py-4">
 
-          <h1 className="text-purple-400 font-bold text-lg md:text-xl">
-            Love Foundation Christian Center
-          </h1>
+          {/* LOGO */}
+          <div className="flex items-center gap-3">
 
+            <img
+              src="/logo.png"
+              alt="LFCC Logo"
+              className="w-12 h-12 rounded-full object-cover"
+            />
+
+            <h1 className="text-purple-400 font-bold text-lg md:text-xl">
+              Love Foundation Christian Center
+            </h1>
+
+          </div>
+
+          {/* DESKTOP MENU */}
           <div className="hidden md:flex gap-6 text-zinc-300">
 
             <a
@@ -132,8 +143,51 @@ function Broadcast() {
 
           </div>
 
+          {/* MOBILE BUTTON */}
+          <button
+            onClick={() => {
+
+              const menu =
+                document.getElementById(
+                  "mobileMenuHome"
+                );
+
+              if (menu) {
+                menu.classList.toggle("hidden");
+              }
+
+            }}
+            className="md:hidden text-white text-3xl"
+          >
+            ☰
+          </button>
+
         </div>
+
+        {/* MOBILE MENU */}
+        <div
+          id="mobileMenuHome"
+          className="hidden md:hidden flex flex-col gap-4 px-6 pb-4 text-zinc-300"
+        >
+
+          <a
+            href="/"
+            className="hover:text-purple-400 transition"
+          >
+            Home
+          </a>
+
+          <a
+            href="/about"
+            className="hover:text-purple-400 transition"
+          >
+            About
+          </a>
+
+        </div>
+
       </nav>
+      
 
       {/* ================= CONTENT ================= */}
       <section className="py-16 px-4">
