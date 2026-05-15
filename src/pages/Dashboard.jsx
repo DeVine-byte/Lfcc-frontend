@@ -168,9 +168,7 @@ function Dashboard() {
     } catch (err) {
 
       console.log(err);
-
-      
-      alert(JSON.stringify(data));
+      alert(err);
 
     }
   };
