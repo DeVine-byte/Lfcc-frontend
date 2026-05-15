@@ -347,20 +347,18 @@ function Home() {
               >
                 X
               </a>
-
               {/* COPY */}
               <button
                 onClick={() =>
                   copyLink(
-                    window.location.href,
-                    "Message link copied!"
+                  videoLink,
+                  "link copied!"
                   )
                 }
-                className="bg-purple-500 px-5 py-3 rounded-xl"
-              >
+                className="bg-purple-500 py-2 rounded-xl"
+                >
                 Copy Link
               </button>
-
             </div>
 
           </div>
