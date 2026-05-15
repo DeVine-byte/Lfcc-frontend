@@ -173,7 +173,7 @@ function About() {
           <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-12 md:p-14">
 
             <h2 className="text-3xl font-bold text-purple-400 mb-8">
-              Our Foundation
+              Our Mission
             </h2>
 
             <p className="text-zinc-400 leading-9 max-w-3xl">
@@ -329,7 +329,7 @@ function About() {
                 </p>
 
                 <p>
-                  5:00 PM – 12:00 PM
+                  5:00 PM – 6:30 PM
                 </p>
 
               </div>
