@@ -169,7 +169,8 @@ function Dashboard() {
 
       console.log(err);
 
-      alert("Message upload failed");
+      
+      alert(JSON.stringify(data));
 
     }
   };
