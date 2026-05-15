@@ -7,7 +7,7 @@ import {
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Dashboard from "./pages/Dashboard";
-import Login from "./pages/AdminLogin";
+import AdminLogin from "./pages/AdminLogin";
 import Broadcast from "./pages/Broadcast";
 
 function App() {
