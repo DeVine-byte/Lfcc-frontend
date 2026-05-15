@@ -203,9 +203,18 @@ function Broadcast() {
           <div className="rounded-3xl overflow-hidden mb-10">
 
             <CloudinaryPlayer
-              publicId={broadcast.videoUrl}
-              height="650px"
-            />
+              publicId={v.videoUrl}
+              controls
+              options={{
+                controls: true,
+                showLogo: false,
+                fluid: true,
+                preload: "auto",
+                controlBar: {
+                  download: false
+                }
+              }}
+              />
 
           </div>
           
