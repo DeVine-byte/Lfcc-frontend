@@ -1,66 +1,29 @@
-import { useEffect, useRef } from "react";
-
 function CloudinaryPlayer({
-
   publicId,
-
-  width = "100%",
-
   height = "500px",
-
 }) {
 
-  const videoRef = useRef(null);
-
-  const playerRef = useRef(null);
-
-  useEffect(() => {
-
-    if (!window.cloudinary) return;
-
-    if (playerRef.current) return;
-
-    playerRef.current = window.cloudinary.videoPlayer(
-      videoRef.current,
-      {
-        cloud_name: "dbsup8wb8",
-
-        controls: true,
-
-        fluid: true,
-
-        muted: false,
-
-        autoplay: false,
-
-        colors: {
-          base: "#a855f7",
-          accent: "#ffffff",
-          text: "#ffffff",
-        },
-
-        controlBar: {
-          volumePanel: true,
-        },
-      }
-    );
-
-    playerRef.current.source(publicId);
-
-  }, [publicId]);
+  // =========================
+  // CLOUDINARY VIDEO URL
+  // =========================
+  const videoUrl =
+    `https://res.cloudinary.com/dbsup8wb8/video/upload/${publicId}.mp4`;
 
   return (
-    <div
-      style={{
-        width,
-        height,
-      }}
+    <video
+      controls
+      className="w-full rounded-2xl bg-black"
+      style={{ height }}
     >
-      <video
-        ref={videoRef}
-        className="cld-video-player cld-fluid"
+
+      <source
+        src={videoUrl}
+        type="video/mp4"
       />
-    </div>
+
+      Your browser does not support video.
+
+    </video>
   );
 }
 
