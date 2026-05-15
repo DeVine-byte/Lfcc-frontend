@@ -249,13 +249,13 @@ function Home() {
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-10 items-center">
           {/* TEXT */}
           <div>
-            <p className="text-purple-400 font-semibold mb-3 uppercase tracking-widest">
-              Welcome To Love Foundation Christian Centre 
-            </p>
 
             <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6">
-              A place to find God's love
+              Welcome to Love Foundation Christian Centre 
             </h1>
+            <p className="text-purple-400 font-semibold mb-3 uppercase tracking-widest">
+              A place to find God's love
+            </p>
           </div>
 
           {/* HERO VIDEO */}
