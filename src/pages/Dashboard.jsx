@@ -3,74 +3,37 @@ import { useNavigate } from "react-router-dom";
 import { API_URL } from "../config";
 
 function Dashboard() {
-
   const navigate = useNavigate();
 
   // =========================
   // AUTH CHECK
   // =========================
   useEffect(() => {
-
     const token = localStorage.getItem("token");
 
     if (!token) {
       navigate("/admin-login");
     }
-
   }, []);
 
   // =========================
-  // LOGOUT
+  // STATES
   // =========================
-  const logout = () => {
+  const [broadcasts, setBroadcasts] = useState([]);
+  const [messages, setMessages] = useState([]);
+  const [events, setEvents] = useState([]);
 
-    localStorage.removeItem("token");
-
-    window.location.href = "/";
-
-  };
-
-  // =========================
-  // EXTRACT CLOUDINARY PUBLIC ID
-  // =========================
-  const extractPublicId = (url) => {
-
-    try {
-
-      const split = url.split("public_id=")[1];
-
-      if (!split) return "";
-
-      return decodeURIComponent(split);
-
-    } catch (err) {
-
-      return "";
-
-    }
-
-  };
-
-  // =========================
-  // BROADCAST STATE
-  // =========================
   const [broadcast, setBroadcast] = useState({
     title: "",
     description: "",
     videoUrl: "",
   });
 
-  // =========================
-  // MESSAGE STATE
-  // =========================
   const [message, setMessage] = useState({
     title: "",
     videoUrl: "",
   });
 
-  // =========================
-  // EVENT STATE
-  // =========================
   const [event, setEvent] = useState({
     title: "",
     mediaUrl: "",
@@ -78,51 +41,121 @@ function Dashboard() {
   });
 
   // =========================
+  // LOAD DATA
+  // =========================
+  useEffect(() => {
+    fetchBroadcasts();
+    fetchMessages();
+    fetchEvents();
+  }, []);
+
+  const fetchBroadcasts = async () => {
+    try {
+      const res = await fetch(`${API_URL}/cms/broadcasts`);
+      const data = await res.json();
+
+      setBroadcasts(data.reverse()); // newest first
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const fetchMessages = async () => {
+    try {
+      const res = await fetch(`${API_URL}/cms/messages`);
+      const data = await res.json();
+      setMessages(data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const fetchEvents = async () => {
+    try {
+      const res = await fetch(`${API_URL}/cms/events`);
+      const data = await res.json();
+      setEvents(data.reverse());
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  // =========================
+  // LOGOUT
+  // =========================
+  const logout = () => {
+    localStorage.removeItem("token");
+    window.location.href = "/";
+  };
+
+  // =========================
+  // CLOUDINARY HELPER
+  // =========================
+  const extractPublicId = (url) => {
+    try {
+      const split = url.split("public_id=")[1];
+      if (!split) return "";
+      return decodeURIComponent(split);
+    } catch {
+      return "";
+    }
+  };
+
+  // =========================
+  // DELETE HELPERS
+  // =========================
+  const token = localStorage.getItem("token");
+
+  const deleteItem = async (type, id) => {
+    try {
+      const res = await fetch(`${API_URL}/cms/${type}/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+      alert(data.message);
+
+      if (type === "broadcast") fetchBroadcasts();
+      if (type === "message") fetchMessages();
+      if (type === "event") fetchEvents();
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  // =========================
   // SAVE BROADCAST
   // =========================
   const handleBroadcast = async () => {
-
     try {
-
-      const token = localStorage.getItem("token");
-
       const payload = {
         ...broadcast,
-        videoUrl: extractPublicId(
-          broadcast.videoUrl
-        ),
+        videoUrl: extractPublicId(broadcast.videoUrl),
+        views: 0,
+        createdAt: new Date().toISOString(),
       };
 
-      const res = await fetch(
-        `${API_URL}/cms/broadcast`,
-        {
-          method: "POST",
-
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-
-          body: JSON.stringify(payload),
-        }
-      );
+      const res = await fetch(`${API_URL}/cms/broadcast`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
 
       const data = await res.json();
 
       alert(data.message);
 
-      setBroadcast({
-        title: "",
-        description: "",
-        videoUrl: "",
-      });
-
+      setBroadcast({ title: "", description: "", videoUrl: "" });
+      fetchBroadcasts();
     } catch (err) {
-
       console.log(err);
-
-      alert("Broadcast upload failed");
-
+      alert("Upload failed");
     }
   };
 
@@ -130,46 +163,29 @@ function Dashboard() {
   // SAVE MESSAGE
   // =========================
   const handleMessage = async () => {
-
     try {
-
-      const token = localStorage.getItem("token");
-
       const payload = {
         ...message,
-        videoUrl: extractPublicId(
-          message.videoUrl
-        ),
+        videoUrl: extractPublicId(message.videoUrl),
       };
 
-      const res = await fetch(
-        `${API_URL}/cms/message`,
-        {
-          method: "POST",
-
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-
-          body: JSON.stringify(payload),
-        }
-      );
+      const res = await fetch(`${API_URL}/cms/message`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
 
       const data = await res.json();
 
-      alert(JSON.stringify(data));
+      alert(data.message);
 
-      setMessage({
-        title: "",
-        videoUrl: "",
-      });
-
+      setMessage({ title: "", videoUrl: "" });
+      fetchMessages();
     } catch (err) {
-
       console.log(err);
-      alert(err);
-
     }
   };
 
@@ -177,363 +193,219 @@ function Dashboard() {
   // SAVE EVENT
   // =========================
   const handleEvent = async () => {
-
     try {
-
-      const token = localStorage.getItem("token");
-
-      const res = await fetch(
-        `${API_URL}/cms/event`,
-        {
-          method: "POST",
-
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-
-          body: JSON.stringify(event),
-        }
-      );
-
-      const data = await res.json();
-
-      alert(data.message);
-
-      setEvent({
-        title: "",
-        mediaUrl: "",
-        date: "",
+      const res = await fetch(`${API_URL}/cms/event`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(event),
       });
 
-    } catch (err) {
-
-      console.log(err);
-
-      alert("Event upload failed");
-
-    }
-  };
-
-  // =========================
-  // CLEAR FORMS
-  // =========================
-  const clearBroadcast = async (id) => {
-    try {
-      
-      const token =
-        localStorage.getItem("token");
-      const res = await fetch(
-        `${API_URL}/cms/broadcast/${id}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
       const data = await res.json();
+
       alert(data.message);
-      fetchBroadcasts();
-    } catch (err) {
-      console.log(err);
-    }
-  };
-  const clearMessage = async (id) => {
-    try {
-      const token =
-        localStorage.getItem("token");
-      const res = await fetch(
-        `${API_URL}/cms/message/${id}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      const data = await res.json();
-      alert(data.message);
-      fetchMessages();
-    } catch (err) {
-      console.log(err);
-    }
-  };
-  const clearEvent = async (id) => {
-    try {
-      const token =
-        localStorage.getItem("token");
-      const res = await fetch(
-        `${API_URL}/cms/event/${id}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      const data = await res.json();
-      alert(data.message);
+
+      setEvent({ title: "", mediaUrl: "", date: "" });
       fetchEvents();
     } catch (err) {
       console.log(err);
     }
   };
+
+  // =========================
+  // UI
+  // =========================
   return (
     <div className="bg-black min-h-screen text-white p-8">
 
       {/* HEADER */}
       <div className="flex justify-between items-center mb-10">
-
         <h1 className="text-4xl font-bold text-purple-400">
           LFCC Admin Dashboard
         </h1>
 
         <button
           onClick={logout}
-          className="bg-red-500 hover:bg-red-600 px-5 py-3 rounded-xl"
+          className="bg-red-500 px-5 py-3 rounded-xl"
         >
           Logout
         </button>
-
       </div>
 
+      {/* GRID */}
       <div className="grid gap-10">
 
         {/* ================= BROADCAST ================= */}
-        <div className="bg-zinc-900 p-8 rounded-2xl border border-zinc-800">
+        <section className="bg-zinc-900 p-6 rounded-2xl">
+          <h2 className="text-xl font-bold mb-4">Broadcasts</h2>
 
-          <h2 className="text-2xl font-bold mb-6">
-            Upload Broadcast
-          </h2>
+          <input
+            placeholder="Title"
+            value={broadcast.title}
+            onChange={(e) =>
+              setBroadcast({ ...broadcast, title: e.target.value })
+            }
+            className="w-full p-3 bg-zinc-800 mb-2"
+          />
 
-          <div className="grid gap-4">
+          <textarea
+            placeholder="Description"
+            value={broadcast.description}
+            onChange={(e) =>
+              setBroadcast({ ...broadcast, description: e.target.value })
+            }
+            className="w-full p-3 bg-zinc-800 mb-2"
+          />
 
-            <input
-              type="text"
-              placeholder="Broadcast Title"
-              value={broadcast.title}
-              className="p-4 rounded-xl bg-zinc-800 outline-none"
-              onChange={(e) =>
-                setBroadcast({
-                  ...broadcast,
-                  title: e.target.value,
-                })
-              }
-            />
+          <input
+            placeholder="Video URL"
+            value={broadcast.videoUrl}
+            onChange={(e) =>
+              setBroadcast({ ...broadcast, videoUrl: e.target.value })
+            }
+            className="w-full p-3 bg-zinc-800 mb-2"
+          />
 
-            <textarea
-              placeholder="Broadcast Description"
-              value={broadcast.description}
-              className="p-4 rounded-xl bg-zinc-800 outline-none"
-              onChange={(e) =>
-                setBroadcast({
-                  ...broadcast,
-                  description: e.target.value,
-                })
-              }
-            />
+          <button
+            onClick={handleBroadcast}
+            className="bg-purple-500 px-4 py-2 rounded"
+          >
+            Save Broadcast
+          </button>
 
-            <input
-              type="text"
-              placeholder="Cloudinary Embed URL"
-              value={broadcast.videoUrl}
-              className="p-4 rounded-xl bg-zinc-800 outline-none"
-              onChange={(e) =>
-                setBroadcast({
-                  ...broadcast,
-                  videoUrl: e.target.value,
-                })
-              }
-            />
-
-            {/* VIDEO PREVIEW */}
-            {broadcast.videoUrl && (
-
-              <img
-                src={`https://res.cloudinary.com/dbsup8wb8/video/upload/so_3/${extractPublicId(
-                  broadcast.videoUrl
-                )}.jpg`}
-                alt="preview"
-                className="rounded-xl h-56 object-cover w-full"
-              />
-
-            )}
-
-            <div className="flex gap-4">
-
-              <button
-                onClick={handleBroadcast}
-                className="bg-purple-500 hover:bg-purple-600 p-4 rounded-xl w-full font-bold"
+          {/* ANALYTICS */}
+          <div className="mt-6 space-y-2">
+            {broadcasts.map((b) => (
+              <div
+                key={b._id}
+                className="flex justify-between bg-zinc-800 p-3 rounded"
               >
-                Save Broadcast
-              </button>
+                <div>
+                  <p className="font-bold">{b.title}</p>
+                  <p className="text-sm text-zinc-400">
+                    Views: {b.views || 0}
+                  </p>
+                </div>
 
-              <button
-                onClick={clearBroadcast}
-                className="bg-red-500 hover:bg-red-600 p-4 rounded-xl w-full font-bold"
-              >
-                Clear
-              </button>
-
-            </div>
-
+                <button
+                  onClick={() => deleteItem("broadcast", b._id)}
+                  className="bg-red-500 px-3 py-1 rounded"
+                >
+                  Delete
+                </button>
+              </div>
+            ))}
           </div>
-
-        </div>
+        </section>
 
         {/* ================= MESSAGE ================= */}
-        <div className="bg-zinc-900 p-8 rounded-2xl border border-zinc-800">
+        <section className="bg-zinc-900 p-6 rounded-2xl">
+          <h2 className="text-xl font-bold mb-4">Message of Week</h2>
 
-          <h2 className="text-2xl font-bold mb-6">
-            Message Of The Week
-          </h2>
+          <input
+            placeholder="Title"
+            value={message.title}
+            onChange={(e) =>
+              setMessage({ ...message, title: e.target.value })
+            }
+            className="w-full p-3 bg-zinc-800 mb-2"
+          />
 
-          <div className="grid gap-4">
+          <input
+            placeholder="Video URL"
+            value={message.videoUrl}
+            onChange={(e) =>
+              setMessage({ ...message, videoUrl: e.target.value })
+            }
+            className="w-full p-3 bg-zinc-800 mb-2"
+          />
 
-            <input
-              type="text"
-              placeholder="Message Title"
-              value={message.title}
-              className="p-4 rounded-xl bg-zinc-800 outline-none"
-              onChange={(e) =>
-                setMessage({
-                  ...message,
-                  title: e.target.value,
-                })
-              }
-            />
+          <button
+            onClick={handleMessage}
+            className="bg-purple-500 px-4 py-2 rounded"
+          >
+            Save Message
+          </button>
 
-            <input
-              type="text"
-              placeholder="Cloudinary Embed URL"
-              value={message.videoUrl}
-              className="p-4 rounded-xl bg-zinc-800 outline-none"
-              onChange={(e) =>
-                setMessage({
-                  ...message,
-                  videoUrl: e.target.value,
-                })
-              }
-            />
-
-            {/* MESSAGE PREVIEW */}
-            {message.videoUrl && (
-
-              <img
-                src={`https://res.cloudinary.com/dbsup8wb8/video/upload/so_3/${extractPublicId(
-                  message.videoUrl
-                )}.jpg`}
-                alt="preview"
-                className="rounded-xl h-56 object-cover w-full"
-              />
-
-            )}
-
-            <div className="flex gap-4">
-
-              <button
-                onClick={handleMessage}
-                className="bg-purple-500 hover:bg-purple-600 p-4 rounded-xl w-full font-bold"
+          <div className="mt-6 space-y-2">
+            {messages.map((m) => (
+              <div
+                key={m._id}
+                className="flex justify-between bg-zinc-800 p-3 rounded"
               >
-                Save Message
-              </button>
+                <p>{m.title}</p>
 
-              <button
-                onClick={clearMessage}
-                className="bg-red-500 hover:bg-red-600 p-4 rounded-xl w-full font-bold"
-              >
-                Clear
-              </button>
-
-            </div>
-
+                <button
+                  onClick={() => deleteItem("message", m._id)}
+                  className="bg-red-500 px-3 py-1 rounded"
+                >
+                  Delete
+                </button>
+              </div>
+            ))}
           </div>
+        </section>
 
-        </div>
+        {/* ================= EVENTS ================= */}
+        <section className="bg-zinc-900 p-6 rounded-2xl">
+          <h2 className="text-xl font-bold mb-4">Events</h2>
 
-        {/* ================= EVENT ================= */}
-        <div className="bg-zinc-900 p-8 rounded-2xl border border-zinc-800">
+          <input
+            placeholder="Title"
+            value={event.title}
+            onChange={(e) =>
+              setEvent({ ...event, title: e.target.value })
+            }
+            className="w-full p-3 bg-zinc-800 mb-2"
+          />
 
-          <h2 className="text-2xl font-bold mb-6">
-            Upload Event
-          </h2>
+          <input
+            placeholder="Media URL"
+            value={event.mediaUrl}
+            onChange={(e) =>
+              setEvent({ ...event, mediaUrl: e.target.value })
+            }
+            className="w-full p-3 bg-zinc-800 mb-2"
+          />
 
-          <div className="grid gap-4">
+          <input
+            type="date"
+            value={event.date}
+            onChange={(e) =>
+              setEvent({ ...event, date: e.target.value })
+            }
+            className="w-full p-3 bg-zinc-800 mb-2"
+          />
 
-            <input
-              type="text"
-              placeholder="Event Title"
-              value={event.title}
-              className="p-4 rounded-xl bg-zinc-800 outline-none"
-              onChange={(e) =>
-                setEvent({
-                  ...event,
-                  title: e.target.value,
-                })
-              }
-            />
+          <button
+            onClick={handleEvent}
+            className="bg-purple-500 px-4 py-2 rounded"
+          >
+            Save Event
+          </button>
 
-            <input
-              type="text"
-              placeholder="Flyer/Image URL"
-              value={event.mediaUrl}
-              className="p-4 rounded-xl bg-zinc-800 outline-none"
-              onChange={(e) =>
-                setEvent({
-                  ...event,
-                  mediaUrl: e.target.value,
-                })
-              }
-            />
-
-            <input
-              type="date"
-              value={event.date}
-              className="p-4 rounded-xl bg-zinc-800 outline-none"
-              onChange={(e) =>
-                setEvent({
-                  ...event,
-                  date: e.target.value,
-                })
-              }
-            />
-
-            {/* EVENT PREVIEW */}
-            {event.mediaUrl && (
-
-              <img
-                src={event.mediaUrl}
-                alt="event"
-                className="rounded-xl h-56 object-cover w-full"
-              />
-
-            )}
-
-            <div className="flex gap-4">
-
-              <button
-                onClick={handleEvent}
-                className="bg-purple-500 hover:bg-purple-600 p-4 rounded-xl w-full font-bold"
+          <div className="mt-6 space-y-2">
+            {events.map((e) => (
+              <div
+                key={e._id}
+                className="flex justify-between bg-zinc-800 p-3 rounded"
               >
-                Save Event
-              </button>
+                <p>{e.title}</p>
 
-              <button
-                onClick={clearEvent}
-                className="bg-red-500 hover:bg-red-600 p-4 rounded-xl w-full font-bold"
-              >
-                Clear
-              </button>
-
-            </div>
-
+                <button
+                  onClick={() => deleteItem("event", e._id)}
+                  className="bg-red-500 px-3 py-1 rounded"
+                >
+                  Delete
+                </button>
+              </div>
+            ))}
           </div>
-
-        </div>
+        </section>
 
       </div>
-
     </div>
   );
 }
