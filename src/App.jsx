@@ -1,23 +1,35 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+} from "react-router-dom";
 
 import Home from "./pages/Home";
 import About from "./pages/About";
-import AdminLogin from "./pages/AdminLogin";
 import Dashboard from "./pages/Dashboard";
+import Login from "./pages/Login";
+import Broadcast from "./pages/Broadcast";
 
 function App() {
+
   return (
     <BrowserRouter>
+
       <Routes>
 
-        {/* PUBLIC */}
-        <Route path="/" element={<Home />} />
-        <Route path="/about" element={<About />} />
+        <Route
+          path="/"
+          element={<Home />}
+        />
 
-        {/* HIDDEN ADMIN */}
+        <Route
+          path="/about"
+          element={<About />}
+        />
+
         <Route
           path="/admin-login"
-          element={<AdminLogin />}
+          element={<Login />}
         />
 
         <Route
@@ -25,7 +37,13 @@ function App() {
           element={<Dashboard />}
         />
 
+        <Route
+          path="/broadcast/:id"
+          element={<Broadcast />}
+        />
+
       </Routes>
+
     </BrowserRouter>
   );
 }
