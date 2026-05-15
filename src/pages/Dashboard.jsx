@@ -218,35 +218,67 @@ function Dashboard() {
   // =========================
   // CLEAR FORMS
   // =========================
-  const clearBroadcast = () => {
-
-    setBroadcast({
-      title: "",
-      description: "",
-      videoUrl: "",
-    });
-
+  const clearBroadcast = async (id) => {
+    try {
+      
+      const token =
+        localStorage.getItem("token");
+      const res = await fetch(
+        `${API_URL}/cms/broadcast/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const data = await res.json();
+      alert(data.message);
+      fetchBroadcasts();
+    } catch (err) {
+      console.log(err);
+    }
   };
-
-  const clearMessage = () => {
-
-    setMessage({
-      title: "",
-      videoUrl: "",
-    });
-
+  const clearMessage = async (id) => {
+    try {
+      const token =
+        localStorage.getItem("token");
+      const res = await fetch(
+        `${API_URL}/cms/message/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const data = await res.json();
+      alert(data.message);
+      fetchMessages();
+    } catch (err) {
+      console.log(err);
+    }
   };
-
-  const clearEvent = () => {
-
-    setEvent({
-      title: "",
-      mediaUrl: "",
-      date: "",
-    });
-
+  const clearEvent = async (id) => {
+    try {
+      const token =
+        localStorage.getItem("token");
+      const res = await fetch(
+        `${API_URL}/cms/event/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const data = await res.json();
+      alert(data.message);
+      fetchEvents();
+    } catch (err) {
+      console.log(err);
+    }
   };
-
   return (
     <div className="bg-black min-h-screen text-white p-8">
 
