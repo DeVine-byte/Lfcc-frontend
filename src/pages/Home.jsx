@@ -250,28 +250,12 @@ function Home() {
           {/* TEXT */}
           <div>
             <p className="text-purple-400 font-semibold mb-3 uppercase tracking-widest">
-              Welcome Home
+              Welcome To Love Foundation Christian Centre 
             </p>
 
             <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6">
-              Encounter God Through Worship & The Word
+              A place to find God's love
             </h1>
-
-            <p className="text-zinc-400 text-lg leading-relaxed">
-              Join us live and stay connected to every
-              message, event, and broadcast from Love
-              Foundation Christian Center.
-            </p>
-
-            <div className="flex flex-wrap gap-4 mt-8">
-              <button className="bg-purple-500 hover:bg-purple-600 transition px-6 py-3 rounded-xl font-semibold">
-                Watch Live
-              </button>
-
-              <button className="border border-zinc-700 hover:border-purple-500 transition px-6 py-3 rounded-xl">
-                Upcoming Events
-              </button>
-            </div>
           </div>
 
           {/* HERO VIDEO */}
