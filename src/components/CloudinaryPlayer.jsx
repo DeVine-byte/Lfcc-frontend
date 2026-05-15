@@ -12,6 +12,9 @@ function CloudinaryPlayer({
   return (
     <video
       controls
+      controlsList="nodownload"
+      disablePictureInPicture
+      onContextMenu={(e) => e.preventDefault()}
       className="w-full rounded-2xl bg-black"
       style={{ height }}
     >
