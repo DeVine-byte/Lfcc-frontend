@@ -142,7 +142,7 @@ function Home() {
   // =========================
   // DOWNLOAD MESSAGE
   // =========================
-  const downloadMessage = () => {
+ /* const downloadMessage = () => {
     if (!messages.length) return;
 
     const url = messages[0].videoUrl.replace(
@@ -161,7 +161,7 @@ function Home() {
 
     document.body.removeChild(a);
   };
-
+*/
   // =========================
   // LOADING UI
   // =========================
@@ -287,14 +287,7 @@ function Home() {
               height="450px"
             />
 
-            <div className="flex justify-center mt-8">
-              <button
-                onClick={downloadMessage}
-                className="bg-purple-500 hover:bg-purple-600 transition px-8 py-3 rounded-xl font-semibold"
-              >
-                Download Message
-              </button>
-            </div>
+           
           </div>
         </section>
       )}
