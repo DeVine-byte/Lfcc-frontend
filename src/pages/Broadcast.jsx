@@ -199,11 +199,6 @@ function Broadcast() {
             {broadcast.title}
           </h1>
 
-          {/* DESCRIPTION */}
-          <p className="text-zinc-400 text-lg mb-10">
-            {broadcast.description}
-          </p>
-
           {/* VIDEO PLAYER */}
           <div className="rounded-3xl overflow-hidden mb-10">
 
@@ -213,6 +208,13 @@ function Broadcast() {
             />
 
           </div>
+          
+          {/* DESCRIPTION */}
+          <p className="text-zinc-400 text-lg mb-10">
+            {broadcast.description}
+          </p>
+
+          
 
           {/* SHARE BUTTONS */}
           <div className="grid md:grid-cols-4 gap-4">
