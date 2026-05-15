@@ -232,6 +232,16 @@ function Home() {
             className="bg-zinc-900 border border-zinc-700 px-4 py-3 rounded-xl w-full md:w-72 outline-none focus:border-purple-500 transition"
           />
         </div>
+        <div className="hidden md:flex gap-6 text-zinc-300">
+          <a href="/" className="hover:text-purple-400 transition" > Home </a> 
+          <a href="/about" className="hover:text-purple-400 transition" > About </a>
+        </div> {/* MOBILE BUTTON */} <button onClick={() => { const menu = document.getElementById( "mobileMenuHome" ); if (menu) { menu.classList.toggle("hidden"); } }} className="md:hidden text-white text-3xl" > ☰ 
+        </button>
+        {/* MOBILE MENU */}
+        <div id="mobileMenuHome" className="hidden md:hidden flex flex-col gap-4 px-6 pb-4 text-zinc-300" >
+          <a href="/" className="hover:text-purple-400 transition" > Home </a>
+          <a href="/about" className="hover:text-purple-400 transition" > About </a>
+        </div>
       </nav>
 
       {/* ================= HERO ================= */}
