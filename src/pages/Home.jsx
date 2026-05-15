@@ -92,28 +92,25 @@ function Home() {
   // =========================
   const downloadMessage = () => {
     if (!messages.length) return;
-
-    const url = messages[0].videoUrl;
-
+    const url = messages[0].videoUrl.replace('/upload/', '/upload/fl_attachment/');
     const a = document.createElement("a");
     a.href = url;
     a.download = messages[0].title || "message.mp4";
-    a.target = "_blank";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
   };
-
   return (
     <div className="bg-black min-h-screen text-white">
 
       {/* ================= NAVBAR ================= */}
       <nav className="border-b border-zinc-800 sticky top-0 z-50 bg-black">
-        <div className="max-w-7xl mx-auto flex justify-between items-center px-6 py-4">
-
-          <h1 className="text-purple-400 font-bold text-xl">
-            LFCC Media
-          </h1>
+        <div className="flex items-center gap-3"> 
+          <img src="/logo.png" alt="LFCC Logo" className="w-12 h-12 rounded-full object-cover" /> 
+          <h1 className="text-purple-400 font-bold text-lg md:text-xl"> 
+            Love Foundation Christian Center
+          </h1> 
+        </div>
 
           <input
             type="text"
@@ -131,10 +128,11 @@ function Home() {
 
           <div>
             <h1 className="text-5xl font-bold mb-4">
-              Welcome to LFCC
+              Welcome to Love Foundation Christian Center 
             </h1>
             <p className="text-zinc-400">
-              Watch sermons, messages, and events from Love Foundation Christian Center.
+              We gather here to encounter and worship God together.  
+              May this time draw you closer to Christ.
             </p>
           </div>
 
