@@ -3,25 +3,52 @@ import { useNavigate } from "react-router-dom";
 import { API_URL } from "../config";
 
 function Dashboard() {
+
   const navigate = useNavigate();
 
   // =========================
   // AUTH CHECK
   // =========================
   useEffect(() => {
+
     const token = localStorage.getItem("token");
 
     if (!token) {
       navigate("/admin-login");
     }
+
   }, []);
 
   // =========================
   // LOGOUT
   // =========================
   const logout = () => {
+
     localStorage.removeItem("token");
+
     window.location.href = "/";
+
+  };
+
+  // =========================
+  // EXTRACT CLOUDINARY PUBLIC ID
+  // =========================
+  const extractPublicId = (url) => {
+
+    try {
+
+      const split = url.split("public_id=")[1];
+
+      if (!split) return "";
+
+      return decodeURIComponent(split);
+
+    } catch (err) {
+
+      return "";
+
+    }
+
   };
 
   // =========================
@@ -31,7 +58,6 @@ function Dashboard() {
     title: "",
     description: "",
     videoUrl: "",
-    thumbnail: "",
   });
 
   // =========================
@@ -55,19 +81,31 @@ function Dashboard() {
   // SAVE BROADCAST
   // =========================
   const handleBroadcast = async () => {
+
     try {
+
       const token = localStorage.getItem("token");
 
-      const res = await fetch(`${API_URL}/cms/broadcast`, {
-        method: "POST",
+      const payload = {
+        ...broadcast,
+        videoUrl: extractPublicId(
+          broadcast.videoUrl
+        ),
+      };
 
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+      const res = await fetch(
+        `${API_URL}/cms/broadcast`,
+        {
+          method: "POST",
 
-        body: JSON.stringify(broadcast),
-      });
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+
+          body: JSON.stringify(payload),
+        }
+      );
 
       const data = await res.json();
 
@@ -77,12 +115,14 @@ function Dashboard() {
         title: "",
         description: "",
         videoUrl: "",
-        thumbnail: "",
       });
 
     } catch (err) {
+
       console.log(err);
+
       alert("Broadcast upload failed");
+
     }
   };
 
@@ -90,23 +130,35 @@ function Dashboard() {
   // SAVE MESSAGE
   // =========================
   const handleMessage = async () => {
+
     try {
+
       const token = localStorage.getItem("token");
 
-      const res = await fetch(`${API_URL}/cms/message`, {
-        method: "POST",
+      const payload = {
+        ...message,
+        videoUrl: extractPublicId(
+          message.videoUrl
+        ),
+      };
 
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+      const res = await fetch(
+        `${API_URL}/cms/message`,
+        {
+          method: "POST",
 
-        body: JSON.stringify(message),
-      });
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+
+          body: JSON.stringify(payload),
+        }
+      );
 
       const data = await res.json();
 
-      alert(JSON.stringify(data));
+      alert(data.message);
 
       setMessage({
         title: "",
@@ -114,8 +166,11 @@ function Dashboard() {
       });
 
     } catch (err) {
+
       console.log(err);
+
       alert("Message upload failed");
+
     }
   };
 
@@ -123,19 +178,24 @@ function Dashboard() {
   // SAVE EVENT
   // =========================
   const handleEvent = async () => {
+
     try {
+
       const token = localStorage.getItem("token");
 
-      const res = await fetch(`${API_URL}/cms/event`, {
-        method: "POST",
+      const res = await fetch(
+        `${API_URL}/cms/event`,
+        {
+          method: "POST",
 
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
 
-        body: JSON.stringify(event),
-      });
+          body: JSON.stringify(event),
+        }
+      );
 
       const data = await res.json();
 
@@ -148,36 +208,44 @@ function Dashboard() {
       });
 
     } catch (err) {
+
       console.log(err);
+
       alert("Event upload failed");
+
     }
   };
 
   // =========================
-  // DELETE FUNCTIONS
+  // CLEAR FORMS
   // =========================
-  const deleteBroadcast = () => {
+  const clearBroadcast = () => {
+
     setBroadcast({
       title: "",
       description: "",
       videoUrl: "",
-      thumbnail: "",
     });
+
   };
 
-  const deleteMessage = () => {
+  const clearMessage = () => {
+
     setMessage({
       title: "",
       videoUrl: "",
     });
+
   };
 
-  const deleteEvent = () => {
+  const clearEvent = () => {
+
     setEvent({
       title: "",
       mediaUrl: "",
       date: "",
     });
+
   };
 
   return (
@@ -199,10 +267,9 @@ function Dashboard() {
 
       </div>
 
-      {/* MAIN GRID */}
       <div className="grid gap-10">
 
-        {/* BROADCAST */}
+        {/* ================= BROADCAST ================= */}
         <div className="bg-zinc-900 p-8 rounded-2xl border border-zinc-800">
 
           <h2 className="text-2xl font-bold mb-6">
@@ -238,7 +305,7 @@ function Dashboard() {
 
             <input
               type="text"
-              placeholder="Cloudinary Video URL"
+              placeholder="Cloudinary Embed URL"
               value={broadcast.videoUrl}
               className="p-4 rounded-xl bg-zinc-800 outline-none"
               onChange={(e) =>
@@ -249,18 +316,18 @@ function Dashboard() {
               }
             />
 
-            <input
-              type="text"
-              placeholder="Thumbnail URL"
-              value={broadcast.thumbnail}
-              className="p-4 rounded-xl bg-zinc-800 outline-none"
-              onChange={(e) =>
-                setBroadcast({
-                  ...broadcast,
-                  thumbnail: e.target.value,
-                })
-              }
-            />
+            {/* VIDEO PREVIEW */}
+            {broadcast.videoUrl && (
+
+              <img
+                src={`https://res.cloudinary.com/dbsup8wb8/video/upload/so_3/${extractPublicId(
+                  broadcast.videoUrl
+                )}.jpg`}
+                alt="preview"
+                className="rounded-xl h-56 object-cover w-full"
+              />
+
+            )}
 
             <div className="flex gap-4">
 
@@ -272,7 +339,7 @@ function Dashboard() {
               </button>
 
               <button
-                onClick={deleteBroadcast}
+                onClick={clearBroadcast}
                 className="bg-red-500 hover:bg-red-600 p-4 rounded-xl w-full font-bold"
               >
                 Clear
@@ -281,9 +348,10 @@ function Dashboard() {
             </div>
 
           </div>
+
         </div>
 
-        {/* MESSAGE */}
+        {/* ================= MESSAGE ================= */}
         <div className="bg-zinc-900 p-8 rounded-2xl border border-zinc-800">
 
           <h2 className="text-2xl font-bold mb-6">
@@ -307,7 +375,7 @@ function Dashboard() {
 
             <input
               type="text"
-              placeholder="Cloudinary Video URL"
+              placeholder="Cloudinary Embed URL"
               value={message.videoUrl}
               className="p-4 rounded-xl bg-zinc-800 outline-none"
               onChange={(e) =>
@@ -317,6 +385,19 @@ function Dashboard() {
                 })
               }
             />
+
+            {/* MESSAGE PREVIEW */}
+            {message.videoUrl && (
+
+              <img
+                src={`https://res.cloudinary.com/dbsup8wb8/video/upload/so_3/${extractPublicId(
+                  message.videoUrl
+                )}.jpg`}
+                alt="preview"
+                className="rounded-xl h-56 object-cover w-full"
+              />
+
+            )}
 
             <div className="flex gap-4">
 
@@ -328,7 +409,7 @@ function Dashboard() {
               </button>
 
               <button
-                onClick={deleteMessage}
+                onClick={clearMessage}
                 className="bg-red-500 hover:bg-red-600 p-4 rounded-xl w-full font-bold"
               >
                 Clear
@@ -337,9 +418,10 @@ function Dashboard() {
             </div>
 
           </div>
+
         </div>
 
-        {/* EVENT */}
+        {/* ================= EVENT ================= */}
         <div className="bg-zinc-900 p-8 rounded-2xl border border-zinc-800">
 
           <h2 className="text-2xl font-bold mb-6">
@@ -363,7 +445,7 @@ function Dashboard() {
 
             <input
               type="text"
-              placeholder="Flyer or Video URL"
+              placeholder="Flyer/Image URL"
               value={event.mediaUrl}
               className="p-4 rounded-xl bg-zinc-800 outline-none"
               onChange={(e) =>
@@ -386,6 +468,17 @@ function Dashboard() {
               }
             />
 
+            {/* EVENT PREVIEW */}
+            {event.mediaUrl && (
+
+              <img
+                src={event.mediaUrl}
+                alt="event"
+                className="rounded-xl h-56 object-cover w-full"
+              />
+
+            )}
+
             <div className="flex gap-4">
 
               <button
@@ -396,7 +489,7 @@ function Dashboard() {
               </button>
 
               <button
-                onClick={deleteEvent}
+                onClick={clearEvent}
                 className="bg-red-500 hover:bg-red-600 p-4 rounded-xl w-full font-bold"
               >
                 Clear
@@ -405,9 +498,11 @@ function Dashboard() {
             </div>
 
           </div>
+
         </div>
 
       </div>
+
     </div>
   );
 }
