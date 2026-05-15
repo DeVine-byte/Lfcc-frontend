@@ -59,11 +59,21 @@ function Broadcast() {
             LFCC Broadcast
           </h1>
 
-          <a href="/" className="text-zinc-300 hover:text-purple-400">
-            Home
-          </a>
+          {/* DESKTOP MENU */} 
+          <div className="hidden md:flex gap-6 text-zinc-300"> 
+            <a href="/" className="hover:text-purple-400 transition" > Home </a>
+            <a href="/about" className="hover:text-purple-400 transition" > About </a>
+          </div> 
+          {/* MOBILE BUTTON */} 
+          <button onClick={() => { const menu = document.getElementById( "mobileMenuHome" );
+                                  if (menu) { menu.classList.toggle("hidden"); } }} 
+            className="md:hidden text-white text-3xl" > ☰ </button> 
+        </div> 
+        {/* MOBILE MENU */} 
+        <div id="mobileMenuHome" className="hidden md:hidden flex flex-col gap-4 px-6 pb-4 text-zinc-300" > 
+          <a href="/" className="hover:text-purple-400 transition" > Home </a> 
+          <a href="/about" className="hover:text-purple-400 transition" > About </a>
         </div>
-      </nav>
 
       {/* PLAYER */}
       <div className="max-w-6xl mx-auto px-4 py-10">
@@ -74,10 +84,7 @@ function Broadcast() {
 
         <div className="rounded-3xl overflow-hidden mb-8 border border-zinc-800">
 
-          <CloudinaryPlayer
-            publicId={broadcast.videoUrl}
-            height="70vh"
-          />
+          <CloudinaryPlayer publicId={v.videoUrl} controls options={{ controls: true, showLogo: false, fluid: true, preload: "auto", controlBar: { download: false } }} />
 
         </div>
 
