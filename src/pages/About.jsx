@@ -81,6 +81,7 @@ function About() {
 
         </div>
       </section>
+      <br /><br />
 
       {/* MINISTERS */}
       <section className="py-28 px-4">
@@ -164,6 +165,7 @@ function About() {
           </div>
         </div>
       </section>
+      <br /><br />
 
       {/* ABOUT CARDS */}
       <section className="pt-32 pb-24 px-4">
@@ -183,6 +185,7 @@ function About() {
             </p>
 
           </div>
+          <br /><br />
 
           {/* Leadership */}
           <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-12 md:p-14">
@@ -195,17 +198,18 @@ function About() {
               It was founded by Rev. Osagie Daniel Erhabor who is the
               Senior Pastor of the International Headquarters in Laurel,
               Maryland, Washington D.C., United States of America,
-              where he pastors with his lovely wife Pastor Bridget
+              where he pastors with his lovely wife, Bridget Erhabor
               and lives with his family.
               <br /><br />
 
               Osagie Daniel Erhabor, the President of Love Foundation
-              International Inc. and his lovely wife Bridget, are
+              International Inc. and his lovely wife Bridget Erhabor, are
               seasoned ministers of the Gospel whose ministry has
               brought the reality of God’s love to the hearts of many.
             </p>
 
           </div>
+          <br /><br />
 
           {/* Global Impact */}
           <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-12 md:p-14">
@@ -229,6 +233,7 @@ function About() {
             </p>
 
           </div>
+          <br /><br />
 
           {/* Journey */}
           <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-12 md:p-14">
@@ -240,7 +245,7 @@ function About() {
             <p className="text-zinc-400 leading-9 max-w-3xl">
               Though the International Headquarters of the Ministry
               is currently located in Laurel, Maryland, United States
-              of America, where Pastors Daniel and Bridget pastor,
+              of America, where Rev. Daniel and pastor Bridget,
               they are the founding pastors of the Nigeria
               Headquarters Church.
               <br /><br />
@@ -254,6 +259,7 @@ function About() {
 
         </div>
       </section>
+      <br /><br />
 
       {/* WORSHIP INVITATION */}
       <section className="pt-32 pb-28 px-4">
@@ -271,6 +277,7 @@ function About() {
 
         </div>
       </section>
+      <br /><br />
 
       {/* SERVICE TIMES */}
       <section className="py-28 px-4 bg-zinc-950">
@@ -293,17 +300,17 @@ function About() {
 
                 <div>
                   <p className="text-white font-semibold mb-2">
-                    1st Service
+                    School of the Word
                   </p>
 
                   <p>
-                    7:30 AM – 9:00 AM
+                    8:00 AM – 9:00 AM
                   </p>
                 </div>
 
                 <div>
                   <p className="text-white font-semibold mb-2">
-                    2nd Service
+                    Main Service 
                   </p>
 
                   <p>
