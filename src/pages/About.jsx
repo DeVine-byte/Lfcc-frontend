@@ -129,7 +129,7 @@ function About() {
               </h3>
 
               <p className="text-purple-400 mt-3">
-                Pastor Emmanuel
+                Pastor Emmanuel o. kadiri
               </p>
 
               <p className="text-zinc-400 mt-5 text-sm leading-8">
@@ -152,7 +152,7 @@ function About() {
               </h3>
 
               <p className="text-purple-400 mt-3">
-                Pastor Justina
+                Pastor Mrs Justina Osaigbovo 
               </p>
 
               <p className="text-zinc-400 mt-5 text-sm leading-8">
