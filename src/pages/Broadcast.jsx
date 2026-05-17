@@ -25,32 +25,38 @@ function Broadcast() {
   // FETCH
   // =========================
   useEffect(() => {
-    fetchBroadcast();
+    if (id) {
+      fetchBroadcast();
+    }
   }, [id]);
-
   const fetchBroadcast = async () => {
-    try {
+    try { 
       setLoading(true);
-
-      const res = await fetch(`${API_URL}/cms/broadcasts`);
-
+      const res = await fetch(
+        `${API_URL}/cms/broadcast/${id}`
+        );
       if (!res.ok) {
-        throw new Error("Failed to fetch broadcast");
+        throw new Error(
+          "Failed to fetch broadcast"
+        );
       }
-
       const data = await res.json();
-
-      const found = data.find((item) => item._id === id);
-
-      if (!found) {
+      if (
+        data.message ===
+        "Broadcast not found"
+        ){
         setError("Broadcast not found");
         return;
       }
-
-      setBroadcast(found);
-    } catch (err) {
+      setBroadcast(data);
+      await fetch(
+        `${API_URL}/cms/broadcast/views/${id}`,
+        {
+          method: "PUT",
+        }
+      );
+    }catch (err) {
       console.log(err);
-
       setError(
         "Something went wrong while loading this broadcast."
       );
@@ -58,7 +64,6 @@ function Broadcast() {
       setLoading(false);
     }
   };
-
   // =========================
   // COPY LINK
   // =========================
