@@ -126,7 +126,7 @@ function About() {
               />
 
               <h3 className="text-2xl font-bold mt-8">
-                Head Pastor
+                Resident Pastor, lfcc benin
               </h3>
 
               <p className="text-purple-400 mt-3">
@@ -149,7 +149,7 @@ function About() {
               />
 
               <h3 className="text-2xl font-bold mt-8">
-                Assistant Pastor
+                Assistant Pastor, lfcc benin
               </h3>
 
               <p className="text-purple-400 mt-3">
