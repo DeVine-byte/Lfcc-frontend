@@ -244,7 +244,7 @@ setBroadcasts(sorted);
           <div className="border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl">
             {broadcasts[0] && (
               <CloudinaryPlayer
-                publicId={broadcasts[broadcasts.length - 1];].videoUrl}
+                publicId={broadcasts[broadcasts.length - 1].videoUrl}
                 height="420px"
               />
             )}
