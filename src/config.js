@@ -1,1 +1,1 @@
-export const API_URL = "https://lfcc-backend.onrender.com";
+export const API_URL = "https://api.lovefoundationng.org";
