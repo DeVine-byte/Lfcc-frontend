@@ -59,7 +59,11 @@ function Home() {
 
       const data = await res.json();
 
-      setBroadcasts([...data].reverse());
+      const sorted = [...data].sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      );
+
+setBroadcasts(sorted);
     } catch (err) {
       console.log(err);
       throw err;
@@ -139,29 +143,7 @@ function Home() {
     }
   };
 
-  // =========================
-  // DOWNLOAD MESSAGE
-  // =========================
- /* const downloadMessage = () => {
-    if (!messages.length) return;
 
-    const url = messages[0].videoUrl.replace(
-      "/upload/",
-      "/upload/fl_attachment/"
-    );
-
-    const a = document.createElement("a");
-
-    a.href = url;
-    a.download = messages[0].title || "message.mp4";
-
-    document.body.appendChild(a);
-
-    a.click();
-
-    document.body.removeChild(a);
-  };
-*/
   // =========================
   // LOADING UI
   // =========================
