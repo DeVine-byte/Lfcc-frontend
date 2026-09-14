@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../config";
@@ -5,44 +6,32 @@ import { API_URL } from "../config";
 function Dashboard() {
   const navigate = useNavigate();
 
-  // =========================
-  // AUTH CHECK
-  // =========================
   useEffect(() => {
     const token = localStorage.getItem("token");
-
-    if (!token) {
-      navigate("/admin-login");
-    }
+    if (!token) navigate("/admin-login");
   }, []);
 
-  // =========================
-  // STATES
-  // =========================
   const [broadcasts, setBroadcasts] = useState([]);
   const [messages, setMessages] = useState([]);
   const [events, setEvents] = useState([]);
-
   const [broadcast, setBroadcast] = useState({
     title: "",
     description: "",
     videoUrl: "",
   });
-
   const [message, setMessage] = useState({
     title: "",
     videoUrl: "",
   });
-
   const [event, setEvent] = useState({
     title: "",
     mediaUrl: "",
     date: "",
   });
 
-  // =========================
-  // LOAD DATA
-  // =========================
+  const [isUploadingBroadcast, setIsUploadingBroadcast] = useState(false);
+  const [isUploadingMessage, setIsUploadingMessage] = useState(false);
+
   useEffect(() => {
     fetchBroadcasts();
     fetchMessages();
@@ -53,8 +42,7 @@ function Dashboard() {
     try {
       const res = await fetch(`${API_URL}/cms/broadcasts`);
       const data = await res.json();
-
-      setBroadcasts(data.reverse()); // newest first
+      setBroadcasts(data.reverse());
     } catch (err) {
       console.log(err);
     }
@@ -80,30 +68,24 @@ function Dashboard() {
     }
   };
 
-  // =========================
-  // LOGOUT
-  // =========================
   const logout = () => {
     localStorage.removeItem("token");
     window.location.href = "/";
   };
 
-  // =========================
-  // CLOUDINARY HELPER
-  // =========================
   const extractPublicId = (url) => {
+    if (!url) return "";
+    if (!url.includes("http")) return url;
+
     try {
       const split = url.split("public_id=")[1];
-      if (!split) return "";
+      if (!split) return url;
       return decodeURIComponent(split);
     } catch {
-      return "";
+      return url;
     }
   };
 
-  // =========================
-  // DELETE HELPERS
-  // =========================
   const token = localStorage.getItem("token");
 
   const deleteItem = async (type, id) => {
@@ -126,10 +108,49 @@ function Dashboard() {
     }
   };
 
-  // =========================
-  // SAVE BROADCAST
-  // =========================
+  const openCloudinaryWidget = (onSuccessCallback, setUploadingState) => {
+    if (!window.cloudinary) {
+      alert("Cloudinary script not loaded yet. Please refresh.");
+      return;
+    }
+
+    const myWidget = window.cloudinary.createUploadWidget(
+      {
+        cloudName: "dbsup8wb8",
+        uploadPreset: "Love foundation",
+        resourceType: "video",
+        sources: ["local"],
+        multiple: false,
+        chunkSize: 20000000,
+        maxFileSize: 2500000000,
+      },
+      (error, result) => {
+        if (error) {
+          console.error("Widget Error:", error);
+          setUploadingState(false);
+        }
+
+        if (result && result.event === "upload_added") {
+          setUploadingState(true);
+        }
+
+        if (result && result.event === "success") {
+          setUploadingState(false);
+          onSuccessCallback(result.info.secure_url);
+          alert("Video successfully uploaded to Cloudinary!");
+        }
+      }
+    );
+
+    myWidget.open();
+  };
+
   const handleBroadcast = async () => {
+    if (!broadcast.videoUrl) {
+      alert("Please upload a video first!");
+      return;
+    }
+
     try {
       const payload = {
         ...broadcast,
@@ -148,10 +169,14 @@ function Dashboard() {
       });
 
       const data = await res.json();
-
       alert(data.message);
 
-      setBroadcast({ title: "", description: "", videoUrl: "" });
+      setBroadcast({
+        title: "",
+        description: "",
+        videoUrl: "",
+      });
+
       fetchBroadcasts();
     } catch (err) {
       console.log(err);
@@ -159,10 +184,12 @@ function Dashboard() {
     }
   };
 
-  // =========================
-  // SAVE MESSAGE
-  // =========================
   const handleMessage = async () => {
+    if (!message.videoUrl) {
+      alert("Please upload a video first!");
+      return;
+    }
+
     try {
       const payload = {
         ...message,
@@ -179,19 +206,19 @@ function Dashboard() {
       });
 
       const data = await res.json();
-
       alert(data.message);
 
-      setMessage({ title: "", videoUrl: "" });
+      setMessage({
+        title: "",
+        videoUrl: "",
+      });
+
       fetchMessages();
     } catch (err) {
       console.log(err);
     }
   };
 
-  // =========================
-  // SAVE EVENT
-  // =========================
   const handleEvent = async () => {
     try {
       const res = await fetch(`${API_URL}/cms/event`, {
@@ -204,23 +231,22 @@ function Dashboard() {
       });
 
       const data = await res.json();
-
       alert(data.message);
 
-      setEvent({ title: "", mediaUrl: "", date: "" });
+      setEvent({
+        title: "",
+        mediaUrl: "",
+        date: "",
+      });
+
       fetchEvents();
     } catch (err) {
       console.log(err);
     }
   };
 
-  // =========================
-  // UI
-  // =========================
   return (
     <div className="bg-black min-h-screen text-white p-8">
-
-      {/* HEADER */}
       <div className="flex justify-between items-center mb-10">
         <h1 className="text-4xl font-bold text-purple-400">
           LFCC Admin Dashboard
@@ -234,10 +260,8 @@ function Dashboard() {
         </button>
       </div>
 
-      {/* GRID */}
       <div className="grid gap-10">
-
-        {/* ================= BROADCAST ================= */}
+        {/* BROADCAST SECTION */}
         <section className="bg-zinc-900 p-6 rounded-2xl">
           <h2 className="text-xl font-bold mb-4">Broadcasts</h2>
 
@@ -245,7 +269,10 @@ function Dashboard() {
             placeholder="Title"
             value={broadcast.title}
             onChange={(e) =>
-              setBroadcast({ ...broadcast, title: e.target.value })
+              setBroadcast({
+                ...broadcast,
+                title: e.target.value,
+              })
             }
             className="w-full p-3 bg-zinc-800 mb-2"
           />
@@ -254,19 +281,40 @@ function Dashboard() {
             placeholder="Description"
             value={broadcast.description}
             onChange={(e) =>
-              setBroadcast({ ...broadcast, description: e.target.value })
+              setBroadcast({
+                ...broadcast,
+                description: e.target.value,
+              })
             }
             className="w-full p-3 bg-zinc-800 mb-2"
           />
 
-          <input
-            placeholder="Video URL"
-            value={broadcast.videoUrl}
-            onChange={(e) =>
-              setBroadcast({ ...broadcast, videoUrl: e.target.value })
-            }
-            className="w-full p-3 bg-zinc-800 mb-2"
-          />
+          <div className="flex gap-2 items-center mb-4">
+            <button
+              type="button"
+              onClick={() =>
+                openCloudinaryWidget(
+                  (url) =>
+                    setBroadcast({
+                      ...broadcast,
+                      videoUrl: url,
+                    }),
+                  setIsUploadingBroadcast
+                )
+              }
+              className="bg-zinc-700 hover:bg-zinc-600 px-4 py-3 rounded text-sm font-medium"
+            >
+              {isUploadingBroadcast
+                ? "Uploading to Cloudinary..."
+                : "📁 Choose & Upload Video Device"}
+            </button>
+
+            {broadcast.videoUrl && (
+              <span className="text-green-400 text-xs truncate max-w-xs">
+                ✓ Video Linked
+              </span>
+            )}
+          </div>
 
           <button
             onClick={handleBroadcast}
@@ -275,7 +323,6 @@ function Dashboard() {
             Save Broadcast
           </button>
 
-          {/* ANALYTICS */}
           <div className="mt-6 space-y-2">
             {broadcasts.map((b) => (
               <div
@@ -300,7 +347,7 @@ function Dashboard() {
           </div>
         </section>
 
-        {/* ================= MESSAGE ================= */}
+        {/* MESSAGE OF THE WEEK SECTION */}
         <section className="bg-zinc-900 p-6 rounded-2xl">
           <h2 className="text-xl font-bold mb-4">Message of Week</h2>
 
@@ -308,19 +355,40 @@ function Dashboard() {
             placeholder="Title"
             value={message.title}
             onChange={(e) =>
-              setMessage({ ...message, title: e.target.value })
+              setMessage({
+                ...message,
+                title: e.target.value,
+              })
             }
             className="w-full p-3 bg-zinc-800 mb-2"
           />
 
-          <input
-            placeholder="Video URL"
-            value={message.videoUrl}
-            onChange={(e) =>
-              setMessage({ ...message, videoUrl: e.target.value })
-            }
-            className="w-full p-3 bg-zinc-800 mb-2"
-          />
+          <div className="flex gap-2 items-center mb-4">
+            <button
+              type="button"
+              onClick={() =>
+                openCloudinaryWidget(
+                  (url) =>
+                    setMessage({
+                      ...message,
+                      videoUrl: url,
+                    }),
+                  setIsUploadingMessage
+                )
+              }
+              className="bg-zinc-700 hover:bg-zinc-600 px-4 py-3 rounded text-sm font-medium"
+            >
+              {isUploadingMessage
+                ? "Uploading to Cloudinary..."
+                : "📁 Choose & Upload Video Device"}
+            </button>
+
+            {message.videoUrl && (
+              <span className="text-green-400 text-xs truncate max-w-xs">
+                ✓ Video Linked
+              </span>
+            )}
+          </div>
 
           <button
             onClick={handleMessage}
@@ -348,7 +416,7 @@ function Dashboard() {
           </div>
         </section>
 
-        {/* ================= EVENTS ================= */}
+        {/* EVENTS SECTION */}
         <section className="bg-zinc-900 p-6 rounded-2xl">
           <h2 className="text-xl font-bold mb-4">Events</h2>
 
@@ -356,7 +424,10 @@ function Dashboard() {
             placeholder="Title"
             value={event.title}
             onChange={(e) =>
-              setEvent({ ...event, title: e.target.value })
+              setEvent({
+                ...event,
+                title: e.target.value,
+              })
             }
             className="w-full p-3 bg-zinc-800 mb-2"
           />
@@ -365,7 +436,10 @@ function Dashboard() {
             placeholder="Media URL"
             value={event.mediaUrl}
             onChange={(e) =>
-              setEvent({ ...event, mediaUrl: e.target.value })
+              setEvent({
+                ...event,
+                mediaUrl: e.target.value,
+              })
             }
             className="w-full p-3 bg-zinc-800 mb-2"
           />
@@ -374,7 +448,10 @@ function Dashboard() {
             type="date"
             value={event.date}
             onChange={(e) =>
-              setEvent({ ...event, date: e.target.value })
+              setEvent({
+                ...event,
+                date: e.target.value,
+              })
             }
             className="w-full p-3 bg-zinc-800 mb-2"
           />
@@ -404,7 +481,6 @@ function Dashboard() {
             ))}
           </div>
         </section>
-
       </div>
     </div>
   );
