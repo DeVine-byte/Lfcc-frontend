@@ -108,25 +108,43 @@ function Dashboard() {
     }
   };
 
-  const openCloudinaryWidget = (onSuccessCallback, setUploadingState) => {
+const openCloudinaryWidget = (onSuccessCallback, setUploadingState) => {
+  // 1. Fallback script injection check if the global object doesn't exist yet
   if (!window.cloudinary) {
-    alert("Cloudinary script not loaded yet. Please refresh.");
-    return;
+    console.log("Cloudinary global asset missing. Injecting now...");
+    
+    // Check if the script tag already exists in the document to prevent double-loading
+    let existingScript = document.querySelector('script[src*="cloudinary"]');
+    
+    if (!existingScript) {
+      const script = document.createElement("script");
+      script.src = "https://upload-widget.cloudinary.com/latest/global/all.js";
+      script.async = true;
+      script.type = "text/javascript";
+      document.body.appendChild(script);
+      
+      alert("Loading Cloudinary upload configurations... Please try clicking the upload button again in 2 seconds.");
+      return;
+    } else {
+      alert("Finalizing secure server handshake with Cloudinary. Please wait a moment and click upload again.");
+      return;
+    }
   }
 
+  // 2. The core widget execution block once window.cloudinary is confirmed active
   const myWidget = window.cloudinary.createUploadWidget(
     {
       cloudName: "dbsup8wb8",
       uploadPreset: "Love foundation",
       resourceType: "video",
       sources: ["local"],
-      multiple: true,           // Changed to true to support batch operations
-      chunkSize: 20000000,      // Keeps chunking enabled for files > 20MB
-      maxFileSize: 2500000000,  // Max size capacity (2.5GB)
+      multiple: true,           // Changed to true to support multi-video batch queues
+      chunkSize: 20000000,      // Breaks large videos into 20MB packages automatically
+      maxFileSize: 2500000000,  // Supports massive media files up to 2.5GB safely
     },
     (error, result) => {
       if (error) {
-        console.error("Widget Error:", error);
+        console.error("Widget Error Details:", error);
         setUploadingState(false);
       }
 
@@ -136,10 +154,8 @@ function Dashboard() {
 
       if (result && result.event === "success") {
         setUploadingState(false);
-        
-        // Pass the clean public_id directly instead of the secure_url string
+        // Extracts the clean public ID path string for your custom video template
         onSuccessCallback(result.info.public_id); 
-        
         alert("Video successfully uploaded to Cloudinary!");
       }
     }
@@ -147,7 +163,6 @@ function Dashboard() {
 
   myWidget.open();
 };
-
   const handleBroadcast = async () => {
     if (!broadcast.videoUrl) {
       alert("Please upload a video first!");
