@@ -115,42 +115,71 @@ function Dashboard() {
   };
 
   const openCloudinaryWidget = (onSuccessCallback, setUploadingState) => {
-    if (!window.cloudinary) {
-      alert(
-        "The Cloudinary script is currently unavailable. Please verify your internet connection or reload the page."
+    
+    // Internal function to instantly execute the widget once window.cloudinary is validated
+    const launchWidget = () => {
+      const myWidget = window.cloudinary.createUploadWidget(
+        {
+          cloudName: "dbsup8wb8",
+          uploadPreset: "Love foundation",
+          resourceType: "video",
+          sources: ["local"],
+          multiple: true,
+          chunkSize: 20000000,
+          maxFileSize: 2500000000,
+        },
+        (error, result) => {
+          if (error) {
+            console.error("Widget Error Details:", error);
+            setUploadingState(false);
+          }
+          if (result && result.event === "upload_added") {
+            setUploadingState(true);
+          }
+          if (result && result.event === "success") {
+            setUploadingState(false);
+            onSuccessCallback(result.info.public_id); 
+            alert("Video successfully uploaded to Cloudinary!");
+          }
+        }
       );
+      myWidget.open();
+    };
+
+    // 1. If script loaded via index.html, run immediately
+    if (window.cloudinary) {
+      launchWidget();
       return;
     }
 
-    const myWidget = window.cloudinary.createUploadWidget(
-      {
-        cloudName: "dbsup8wb8",
-        uploadPreset: "Love foundation",
-        resourceType: "video",
-        sources: ["local"],
-        multiple: true,
-        chunkSize: 20000000,
-        maxFileSize: 2500000000,
-      },
-      (error, result) => {
-        if (error) {
-          console.error("Widget Error Details:", error);
-          setUploadingState(false);
-        }
+    // 2. If missing, look for a stuck script tag or create one dynamically
+    let existingScript = document.querySelector('script[src*="cloudinary"]');
 
-        if (result && result.event === "upload_added") {
-          setUploadingState(true);
+    if (!existingScript) {
+      console.log("Cloudinary global script missing. Dynamically injecting fallback element...");
+      const script = document.createElement("script");
+      script.src = "https://cloudinary.com";
+      script.async = true;
+      script.type = "text/javascript";
+      
+      // Hook the success trigger straight into the load completion event listener
+      script.onload = () => {
+        if (window.cloudinary) {
+          launchWidget();
+        } else {
+          alert("Cloudinary script downloaded but failed to initialize. Please reload.");
         }
+      };
+      
+      script.onerror = () => {
+        alert("Failed to reach the Cloudinary CDN. Please verify your internet connection.");
+      };
 
-        if (result && result.event === "success") {
-          setUploadingState(false);
-          onSuccessCallback(result.info.public_id);
-          alert("Video successfully uploaded to Cloudinary!");
-        }
-      }
-    );
-
-    myWidget.open();
+      document.body.appendChild(script);
+    } else {
+      // The script element is in the HTML, but it hasn't completed loading from the network yet.
+      alert("Finalizing secure handshake connection with Cloudinary. Please wait 1 second and click upload again.");
+    }
   };
 
   const handleBroadcast = async () => {
