@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../config";
@@ -6,23 +5,21 @@ import { API_URL } from "../config";
 function Dashboard() {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) navigate("/admin-login");
-  }, []);
-
   const [broadcasts, setBroadcasts] = useState([]);
   const [messages, setMessages] = useState([]);
   const [events, setEvents] = useState([]);
+
   const [broadcast, setBroadcast] = useState({
     title: "",
     description: "",
     videoUrl: "",
   });
+
   const [message, setMessage] = useState({
     title: "",
     videoUrl: "",
   });
+
   const [event, setEvent] = useState({
     title: "",
     mediaUrl: "",
@@ -31,6 +28,14 @@ function Dashboard() {
 
   const [isUploadingBroadcast, setIsUploadingBroadcast] = useState(false);
   const [isUploadingMessage, setIsUploadingMessage] = useState(false);
+
+  const token = localStorage.getItem("token");
+
+  useEffect(() => {
+    if (!token) {
+      navigate("/admin-login");
+    }
+  }, [navigate, token]);
 
   useEffect(() => {
     fetchBroadcasts();
@@ -79,14 +84,14 @@ function Dashboard() {
 
     try {
       const split = url.split("public_id=")[1];
+
       if (!split) return url;
+
       return decodeURIComponent(split);
     } catch {
       return url;
     }
   };
-
-  const token = localStorage.getItem("token");
 
   const deleteItem = async (type, id) => {
     try {
@@ -98,6 +103,7 @@ function Dashboard() {
       });
 
       const data = await res.json();
+
       alert(data.message);
 
       if (type === "broadcast") fetchBroadcasts();
@@ -108,61 +114,45 @@ function Dashboard() {
     }
   };
 
-const openCloudinaryWidget = (onSuccessCallback, setUploadingState) => {
-  // 1. Fallback script injection check if the global object doesn't exist yet
-  if (!window.cloudinary) {
-    console.log("Cloudinary global asset missing. Injecting now...");
-    
-    // Check if the script tag already exists in the document to prevent double-loading
-    let existingScript = document.querySelector('script[src*="cloudinary"]');
-    
-    if (!existingScript) {
-      const script = document.createElement("script");
-      script.src = "https://upload-widget.cloudinary.com/latest/global/all.js";
-      script.async = true;
-      script.type = "text/javascript";
-      document.body.appendChild(script);
-      
-      alert("Loading Cloudinary upload configurations... Please try clicking the upload button again in 2 seconds.");
-      return;
-    } else {
-      alert("Finalizing secure server handshake with Cloudinary. Please wait a moment and click upload again.");
+  const openCloudinaryWidget = (onSuccessCallback, setUploadingState) => {
+    if (!window.cloudinary) {
+      alert(
+        "The Cloudinary script is currently unavailable. Please verify your internet connection or reload the page."
+      );
       return;
     }
-  }
 
-  // 2. The core widget execution block once window.cloudinary is confirmed active
-  const myWidget = window.cloudinary.createUploadWidget(
-    {
-      cloudName: "dbsup8wb8",
-      uploadPreset: "Love foundation",
-      resourceType: "video",
-      sources: ["local"],
-      multiple: true,           // Changed to true to support multi-video batch queues
-      chunkSize: 20000000,      // Breaks large videos into 20MB packages automatically
-      maxFileSize: 2500000000,  // Supports massive media files up to 2.5GB safely
-    },
-    (error, result) => {
-      if (error) {
-        console.error("Widget Error Details:", error);
-        setUploadingState(false);
+    const myWidget = window.cloudinary.createUploadWidget(
+      {
+        cloudName: "dbsup8wb8",
+        uploadPreset: "Love foundation",
+        resourceType: "video",
+        sources: ["local"],
+        multiple: true,
+        chunkSize: 20000000,
+        maxFileSize: 2500000000,
+      },
+      (error, result) => {
+        if (error) {
+          console.error("Widget Error Details:", error);
+          setUploadingState(false);
+        }
+
+        if (result && result.event === "upload_added") {
+          setUploadingState(true);
+        }
+
+        if (result && result.event === "success") {
+          setUploadingState(false);
+          onSuccessCallback(result.info.public_id);
+          alert("Video successfully uploaded to Cloudinary!");
+        }
       }
+    );
 
-      if (result && result.event === "upload_added") {
-        setUploadingState(true);
-      }
+    myWidget.open();
+  };
 
-      if (result && result.event === "success") {
-        setUploadingState(false);
-        // Extracts the clean public ID path string for your custom video template
-        onSuccessCallback(result.info.public_id); 
-        alert("Video successfully uploaded to Cloudinary!");
-      }
-    }
-  );
-
-  myWidget.open();
-};
   const handleBroadcast = async () => {
     if (!broadcast.videoUrl) {
       alert("Please upload a video first!");
@@ -187,6 +177,7 @@ const openCloudinaryWidget = (onSuccessCallback, setUploadingState) => {
       });
 
       const data = await res.json();
+
       alert(data.message);
 
       setBroadcast({
@@ -224,6 +215,7 @@ const openCloudinaryWidget = (onSuccessCallback, setUploadingState) => {
       });
 
       const data = await res.json();
+
       alert(data.message);
 
       setMessage({
@@ -249,6 +241,7 @@ const openCloudinaryWidget = (onSuccessCallback, setUploadingState) => {
       });
 
       const data = await res.json();
+
       alert(data.message);
 
       setEvent({
@@ -349,6 +342,7 @@ const openCloudinaryWidget = (onSuccessCallback, setUploadingState) => {
               >
                 <div>
                   <p className="font-bold">{b.title}</p>
+
                   <p className="text-sm text-zinc-400">
                     Views: {b.views || 0}
                   </p>
@@ -367,7 +361,9 @@ const openCloudinaryWidget = (onSuccessCallback, setUploadingState) => {
 
         {/* MESSAGE OF THE WEEK SECTION */}
         <section className="bg-zinc-900 p-6 rounded-2xl">
-          <h2 className="text-xl font-bold mb-4">Message of Week</h2>
+          <h2 className="text-xl font-bold mb-4">
+            Message of Week
+          </h2>
 
           <input
             placeholder="Title"
@@ -421,7 +417,9 @@ const openCloudinaryWidget = (onSuccessCallback, setUploadingState) => {
                 key={m._id}
                 className="flex justify-between bg-zinc-800 p-3 rounded"
               >
-                <p>{m.title}</p>
+                <div>
+                  <p className="font-bold">{m.title}</p>
+                </div>
 
                 <button
                   onClick={() => deleteItem("message", m._id)}
@@ -439,7 +437,7 @@ const openCloudinaryWidget = (onSuccessCallback, setUploadingState) => {
           <h2 className="text-xl font-bold mb-4">Events</h2>
 
           <input
-            placeholder="Title"
+            placeholder="Event Title"
             value={event.title}
             onChange={(e) =>
               setEvent({
@@ -451,6 +449,7 @@ const openCloudinaryWidget = (onSuccessCallback, setUploadingState) => {
           />
 
           <input
+            type="text"
             placeholder="Media URL"
             value={event.mediaUrl}
             onChange={(e) =>
@@ -471,7 +470,7 @@ const openCloudinaryWidget = (onSuccessCallback, setUploadingState) => {
                 date: e.target.value,
               })
             }
-            className="w-full p-3 bg-zinc-800 mb-2"
+            className="w-full p-3 bg-zinc-800 mb-4"
           />
 
           <button
@@ -487,7 +486,13 @@ const openCloudinaryWidget = (onSuccessCallback, setUploadingState) => {
                 key={e._id}
                 className="flex justify-between bg-zinc-800 p-3 rounded"
               >
-                <p>{e.title}</p>
+                <div>
+                  <p className="font-bold">{e.title}</p>
+
+                  <p className="text-sm text-zinc-400">
+                    Date: {e.date}
+                  </p>
+                </div>
 
                 <button
                   onClick={() => deleteItem("event", e._id)}
