@@ -109,41 +109,44 @@ function Dashboard() {
   };
 
   const openCloudinaryWidget = (onSuccessCallback, setUploadingState) => {
-    if (!window.cloudinary) {
-      alert("Cloudinary script not loaded yet. Please refresh.");
-      return;
-    }
+  if (!window.cloudinary) {
+    alert("Cloudinary script not loaded yet. Please refresh.");
+    return;
+  }
 
-    const myWidget = window.cloudinary.createUploadWidget(
-      {
-        cloudName: "dbsup8wb8",
-        uploadPreset: "Love foundation",
-        resourceType: "video",
-        sources: ["local"],
-        multiple: false,
-        chunkSize: 20000000,
-        maxFileSize: 2500000000,
-      },
-      (error, result) => {
-        if (error) {
-          console.error("Widget Error:", error);
-          setUploadingState(false);
-        }
-
-        if (result && result.event === "upload_added") {
-          setUploadingState(true);
-        }
-
-        if (result && result.event === "success") {
-          setUploadingState(false);
-          onSuccessCallback(result.info.secure_url);
-          alert("Video successfully uploaded to Cloudinary!");
-        }
+  const myWidget = window.cloudinary.createUploadWidget(
+    {
+      cloudName: "dbsup8wb8",
+      uploadPreset: "Love foundation",
+      resourceType: "video",
+      sources: ["local"],
+      multiple: true,           // Changed to true to support batch operations
+      chunkSize: 20000000,      // Keeps chunking enabled for files > 20MB
+      maxFileSize: 2500000000,  // Max size capacity (2.5GB)
+    },
+    (error, result) => {
+      if (error) {
+        console.error("Widget Error:", error);
+        setUploadingState(false);
       }
-    );
 
-    myWidget.open();
-  };
+      if (result && result.event === "upload_added") {
+        setUploadingState(true);
+      }
+
+      if (result && result.event === "success") {
+        setUploadingState(false);
+        
+        // Pass the clean public_id directly instead of the secure_url string
+        onSuccessCallback(result.info.public_id); 
+        
+        alert("Video successfully uploaded to Cloudinary!");
+      }
+    }
+  );
+
+  myWidget.open();
+};
 
   const handleBroadcast = async () => {
     if (!broadcast.videoUrl) {
@@ -154,7 +157,7 @@ function Dashboard() {
     try {
       const payload = {
         ...broadcast,
-        videoUrl: extractPublicId(broadcast.videoUrl),
+        videoUrl: broadcast.videoUrl,
         views: 0,
         createdAt: new Date().toISOString(),
       };
@@ -193,7 +196,7 @@ function Dashboard() {
     try {
       const payload = {
         ...message,
-        videoUrl: extractPublicId(message.videoUrl),
+        videoUrl: message.videoUrl,
       };
 
       const res = await fetch(`${API_URL}/cms/message`, {
