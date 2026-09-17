@@ -113,7 +113,7 @@ function Dashboard() {
       console.log(err);
     }
   };
-
+ 
   const openCloudinaryWidget = (onSuccessCallback, setUploadingState) => {
     
     // Internal function to instantly execute the widget once window.cloudinary is validated
