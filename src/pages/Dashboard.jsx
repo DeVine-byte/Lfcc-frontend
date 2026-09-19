@@ -78,11 +78,11 @@ function Dashboard() {
     }
   };
 
-  // ==========================================
-  // NEW S3 NATIVE FILE UPLOADER INFRASTRUCTURE
-  // ==========================================
-  const handleNativeAWSUpload = async (event, setUrlCallback, setUploadingState) => {
-    const file = event.target.files[0];
+  // =========================================================
+  // NATIVE AWS UPLOADER INFRASTRUCTURE WITH CACHE-CLEARING FIX
+  // =========================================================
+  const handleNativeAWSUpload = async (uiEvent, setUrlCallback, setUploadingState) => {
+    const file = uiEvent.target.files[0];
     if (!file) return;
 
     try {
@@ -113,6 +113,8 @@ function Dashboard() {
       alert("AWS cloud channel pipeline interrupted. Check your CORS setup.");
     } finally {
       setUploadingState(false);
+      // BUGFIX: Explicitly wipe the target file value so selecting the same file path fires onChange triggers
+      uiEvent.target.value = "";
     }
   };
 
@@ -143,10 +145,11 @@ function Dashboard() {
       return;
     }
     try {
+      const payload = { ...message };
       const res = await fetch(`${API_URL}/cms/message`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify(message),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       alert(data.message);
@@ -271,6 +274,9 @@ function Dashboard() {
             ))}
           </div>
         </section>
+
+        {/* EVENTS SECTION */}
+
 
         {/* EVENTS SECTION */}
         <section className="bg-zinc-900 p-6 rounded-2xl">
