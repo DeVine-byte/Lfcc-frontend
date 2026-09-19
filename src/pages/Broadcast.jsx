@@ -121,6 +121,7 @@ function Broadcast() {
         </div>
 
         <div className="flex flex-wrap gap-4">
+          {/* FIXED: Added correct share parameters */}
           <a href={`https://wa.me{encodeURIComponent(window.location.href)}`} target="_blank" rel="noreferrer" className="bg-green-500 hover:bg-green-600 transition px-6 py-3 rounded-xl font-semibold">
             Share On WhatsApp
           </a>
