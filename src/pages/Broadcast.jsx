@@ -110,10 +110,11 @@ function Broadcast() {
             src={broadcast.videoUrl} 
             controls 
             className="w-full h-full object-contain"
-            preload="auto"
+            preload="metadata" // FIXED: Automatically captures and displays the first video frame as a thumbnail image
             controlsList="nodownload"
           />
         </div>
+
 
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 mb-8">
           <h2 className="text-2xl font-bold mb-4">About This Message</h2>
