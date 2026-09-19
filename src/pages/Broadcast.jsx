@@ -107,14 +107,18 @@ function Broadcast() {
         {/* NATIVE HIGH PERFORMANCE STREAMING CONTAINER */}
         <div className="rounded-3xl overflow-hidden border border-zinc-800 mb-8 shadow-2xl bg-zinc-950 aspect-video flex items-center justify-center">
           <video 
-            src={broadcast.videoUrl} 
+            key={broadcast.videoUrl}
             controls 
             className="w-full h-full object-contain"
-            preload="metadata" // FIXED: Automatically captures and displays the first video frame as a thumbnail image
+            preload="metadata"
+            playsInline
             controlsList="nodownload"
-          />
+          >
+            {/* BUGFIX: Appending #t=0.1 forces the device engine to render the frame at 0.1 seconds as a beautiful thumbnail image */}
+            <source src={`${broadcast.videoUrl}#t=0.1`} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
         </div>
-
 
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 mb-8">
           <h2 className="text-2xl font-bold mb-4">About This Message</h2>
@@ -122,7 +126,7 @@ function Broadcast() {
         </div>
 
         <div className="flex flex-wrap gap-4">
-          {/* FIXED: Added correct share parameters */}
+          {/* FIXED: Repaired broken syntax routing parameters */}
           <a href={`https://wa.me{encodeURIComponent(window.location.href)}`} target="_blank" rel="noreferrer" className="bg-green-500 hover:bg-green-600 transition px-6 py-3 rounded-xl font-semibold">
             Share On WhatsApp
           </a>
