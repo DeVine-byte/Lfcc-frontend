@@ -110,7 +110,7 @@ function Dashboard() {
       alert("Video safely synchronized and stored across AWS CloudFront distributions!");
     } catch (err) {
       console.error(err);
-      alert("AWS cloud channel pipeline interrupted. Check your CORS setup.");
+      alert(`Upload Failed: ${err.message}`);
     } finally {
       setUploadingState(false);
       // BUGFIX: Explicitly wipe the target file value so selecting the same file path fires onChange triggers
