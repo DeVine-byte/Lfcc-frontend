@@ -82,6 +82,7 @@ function Dashboard() {
   // NATIVE AWS UPLOADER INFRASTRUCTURE WITH CACHE-CLEARING FIX
   // =========================================================
   const handleNativeAWSUpload = async (uiEvent, setUrlCallback, setUploadingState) => {
+    // FIXED: Added [0] here so it extracts the actual file object data payload
     const file = uiEvent.target.files[0];
     if (!file) return;
 
@@ -113,7 +114,7 @@ function Dashboard() {
       alert(`Upload Failed: ${err.message}`);
     } finally {
       setUploadingState(false);
-      // BUGFIX: Explicitly wipe the target file value so selecting the same file path fires onChange triggers
+      // Explicitly wipe the target file value so selecting the same file path fires onChange triggers
       uiEvent.target.value = "";
     }
   };
@@ -274,9 +275,6 @@ function Dashboard() {
             ))}
           </div>
         </section>
-
-        {/* EVENTS SECTION */}
-
 
         {/* EVENTS SECTION */}
         <section className="bg-zinc-900 p-6 rounded-2xl">
