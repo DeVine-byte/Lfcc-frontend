@@ -13,7 +13,7 @@ function Dashboard() {
   const [broadcasts, setBroadcasts] = useState([]);
   const [messages, setMessages] = useState([]);
   const [events, setEvents] = useState([]);
-  
+
   const [broadcast, setBroadcast] = useState({ title: "", description: "", videoUrl: "" });
   const [message, setMessage] = useState({ title: "", videoUrl: "" });
   const [event, setEvent] = useState({ title: "", mediaUrl: "", date: "" });
@@ -32,7 +32,9 @@ function Dashboard() {
       const res = await fetch(`${API_URL}/cms/broadcasts`);
       const data = await res.json();
       setBroadcasts(data.reverse());
-    } catch (err) { console.log(err); }
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   const fetchMessages = async () => {
@@ -40,7 +42,9 @@ function Dashboard() {
       const res = await fetch(`${API_URL}/cms/messages`);
       const data = await res.json();
       setMessages(data);
-    } catch (err) { console.log(err); }
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   const fetchEvents = async () => {
@@ -48,7 +52,9 @@ function Dashboard() {
       const res = await fetch(`${API_URL}/cms/events`);
       const data = await res.json();
       setEvents(data.reverse());
-    } catch (err) { console.log(err); }
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   const logout = () => {
@@ -67,7 +73,9 @@ function Dashboard() {
       if (type === "broadcast") fetchBroadcasts();
       if (type === "message") fetchMessages();
       if (type === "event") fetchEvents();
-    } catch (err) { console.log(err); }
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   // ==========================================
@@ -85,7 +93,7 @@ function Dashboard() {
         `${API_URL}/cms/sign-s3?filename=${encodeURIComponent(file.name)}&filetype=${encodeURIComponent(file.type)}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      
+
       if (!signRes.ok) throw new Error("Could not acquire AWS upload signature bundle");
       const { uploadUrl, downloadUrl } = await signRes.json();
 
@@ -109,7 +117,10 @@ function Dashboard() {
   };
 
   const handleBroadcast = async () => {
-    if (!broadcast.videoUrl) { alert("Please upload a video first!"); return; }
+    if (!broadcast.videoUrl) {
+      alert("Please upload a video first!");
+      return;
+    }
     try {
       const payload = { ...broadcast, views: 0, createdAt: new Date().toISOString() };
       const res = await fetch(`${API_URL}/cms/broadcast`, {
@@ -121,11 +132,16 @@ function Dashboard() {
       alert(data.message);
       setBroadcast({ title: "", description: "", videoUrl: "" });
       fetchBroadcasts();
-    } catch (err) { alert("Upload failed"); }
+    } catch (err) {
+      alert("Upload failed");
+    }
   };
 
   const handleMessage = async () => {
-    if (!message.videoUrl) { alert("Please upload a video first!"); return; }
+    if (!message.videoUrl) {
+      alert("Please upload a video first!");
+      return;
+    }
     try {
       const res = await fetch(`${API_URL}/cms/message`, {
         method: "POST",
@@ -136,7 +152,9 @@ function Dashboard() {
       alert(data.message);
       setMessage({ title: "", videoUrl: "" });
       fetchMessages();
-    } catch (err) { console.log(err); }
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   const handleEvent = async () => {
@@ -150,14 +168,18 @@ function Dashboard() {
       alert(data.message);
       setEvent({ title: "", mediaUrl: "", date: "" });
       fetchEvents();
-    } catch (err) { console.log(err); }
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   return (
     <div className="bg-black min-h-screen text-white p-8">
       <div className="flex justify-between items-center mb-10">
         <h1 className="text-4xl font-bold text-purple-400">LFCC Admin Dashboard</h1>
-        <button onClick={logout} className="bg-red-500 px-5 py-3 rounded-xl">Logout</button>
+        <button onClick={logout} className="bg-red-500 px-5 py-3 rounded-xl">
+          Logout
+        </button>
       </div>
 
       <div className="grid gap-10">
@@ -179,17 +201,21 @@ function Dashboard() {
           <div className="flex gap-2 items-center mb-4">
             <label className="bg-zinc-700 hover:bg-zinc-600 px-4 py-3 rounded text-sm font-medium cursor-pointer transition">
               {isUploadingBroadcast ? "Streaming files to AWS S3..." : "📁 Select Sermon Video Asset"}
-              <input 
-                type="file" 
-                accept="video/*" 
-                className="hidden" 
+              <input
+                type="file"
+                accept="video/*"
+                className="hidden"
                 disabled={isUploadingBroadcast}
-                onChange={(e) => handleNativeAWSUpload(e, (url) => setBroadcast({ ...broadcast, videoUrl: url }), setIsUploadingBroadcast)}
+                onChange={(e) =>
+                  handleNativeAWSUpload(e, (url) => setBroadcast({ ...broadcast, videoUrl: url }), setIsUploadingBroadcast)
+                }
               />
             </label>
             {broadcast.videoUrl && <span className="text-green-400 text-xs truncate max-w-xs">✓ CloudFront CDN Ready</span>}
           </div>
-          <button onClick={handleBroadcast} className="bg-purple-500 px-4 py-2 rounded font-semibold">Save Broadcast</button>
+          <button onClick={handleBroadcast} className="bg-purple-500 px-4 py-2 rounded font-semibold">
+            Save Broadcast
+          </button>
 
           <div className="mt-6 space-y-2">
             {broadcasts.map((b) => (
@@ -198,7 +224,9 @@ function Dashboard() {
                   <p className="font-bold">{b.title}</p>
                   <p className="text-sm text-zinc-400">Views: {b.views || 0}</p>
                 </div>
-                <button onClick={() => deleteItem("broadcast", b._id)} className="bg-red-500 px-3 py-1 rounded">Delete</button>
+                <button onClick={() => deleteItem("broadcast", b._id)} className="bg-red-500 px-3 py-1 rounded">
+                  Delete
+                </button>
               </div>
             ))}
           </div>
@@ -216,23 +244,29 @@ function Dashboard() {
           <div className="flex gap-2 items-center mb-4">
             <label className="bg-zinc-700 hover:bg-zinc-600 px-4 py-3 rounded text-sm font-medium cursor-pointer transition">
               {isUploadingMessage ? "Streaming files to AWS S3..." : "📁 Select Weekly Message Asset"}
-              <input 
-                type="file" 
-                accept="video/*" 
-                className="hidden" 
+              <input
+                type="file"
+                accept="video/*"
+                className="hidden"
                 disabled={isUploadingMessage}
-                onChange={(e) => handleNativeAWSUpload(e, (url) => setMessage({ ...message, videoUrl: url }), setIsUploadingMessage)}
+                onChange={(e) =>
+                  handleNativeAWSUpload(e, (url) => setMessage({ ...message, videoUrl: url }), setIsUploadingMessage)
+                }
               />
             </label>
             {message.videoUrl && <span className="text-green-400 text-xs truncate max-w-xs">✓ CloudFront CDN Ready</span>}
           </div>
-          <button onClick={handleMessage} className="bg-purple-500 px-4 py-2 rounded font-semibold">Save Message</button>
+          <button onClick={handleMessage} className="bg-purple-500 px-4 py-2 rounded font-semibold">
+            Save Message
+          </button>
 
           <div className="mt-6 space-y-2">
             {messages.map((m) => (
               <div key={m._id} className="flex justify-between bg-zinc-800 p-3 rounded">
                 <p>{m.title}</p>
-                <button onClick={() => deleteItem("message", m._id)} className="bg-red-500 px-3 py-1 rounded">Delete</button>
+                <button onClick={() => deleteItem("message", m._id)} className="bg-red-500 px-3 py-1 rounded">
+                  Delete
+                </button>
               </div>
             ))}
           </div>
@@ -241,6 +275,42 @@ function Dashboard() {
         {/* EVENTS SECTION */}
         <section className="bg-zinc-900 p-6 rounded-2xl">
           <h2 className="text-xl font-bold mb-4">Events</h2>
-          <input placeholder="Title" value={event.title} onChange={(e) => setEvent({ ...event, title: e.target.value })} className="w-full p-3 bg-zinc-800 mb-2 rounded" />
-          <input placeholder="Media URL" value={event.mediaUrl} onChange={(e) => setEvent({ ...event, mediaUrl: e.target.value })} className="w-full p-3 bg-zinc-800 mb-2 rounded" />
-Use code with caution.<input type="date" value={event.date} onChange={(e) => setEvent({ ...event, date: e.target.value })} className="w-full p-3 bg-zinc-800 mb-2 rounded" />Save Event{events.map((e) => ({e.title}<button onClick={() => deleteItem("event", e._id)} className="bg-red-500 px-3 py-1 rounded">Delete))});}export default Dashboard;
+          <input
+            placeholder="Title"
+            value={event.title}
+            onChange={(e) => setEvent({ ...event, title: e.target.value })}
+            className="w-full p-3 bg-zinc-800 mb-2 rounded"
+          />
+          <input
+            placeholder="Media URL"
+            value={event.mediaUrl}
+            onChange={(e) => setEvent({ ...event, mediaUrl: e.target.value })}
+            className="w-full p-3 bg-zinc-800 mb-2 rounded"
+          />
+          <input
+            type="date"
+            value={event.date}
+            onChange={(e) => setEvent({ ...event, date: e.target.value })}
+            className="w-full p-3 bg-zinc-800 mb-2 rounded"
+          />
+          <button onClick={handleEvent} className="bg-purple-500 px-4 py-2 rounded font-semibold">
+            Save Event
+          </button>
+
+          <div className="mt-6 space-y-2">
+            {events.map((e) => (
+              <div key={e._id} className="flex justify-between bg-zinc-800 p-3 rounded">
+                <p>{e.title}</p>
+                <button onClick={() => deleteItem("event", e._id)} className="bg-red-500 px-3 py-1 rounded">
+                  Delete
+                </button>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}
+
+export default Dashboard;
