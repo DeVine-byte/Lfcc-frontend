@@ -33,7 +33,11 @@ function Dashboard() {
     setTimeout(() => setNotification({ show: false, message: "", type: "info" }), 4000);
   };
 
-  useEffect(() => { fetchBroadcasts(); fetchMessages(); fetchEvents(); }, []);
+  useEffect(() => {
+    fetchBroadcasts();
+    fetchMessages();
+    fetchEvents();
+  }, []);
 
   const fetchBroadcasts = async () => {
     try {
@@ -42,6 +46,7 @@ function Dashboard() {
       setBroadcasts([...data].reverse());
     } catch (err) { console.log(err); }
   };
+
   const fetchMessages = async () => {
     try {
       const res = await fetch(`${API_URL}/cms/messages`);
@@ -49,6 +54,7 @@ function Dashboard() {
       setMessages(data);
     } catch (err) { console.log(err); }
   };
+
   const fetchEvents = async () => {
     try {
       const res = await fetch(`${API_URL}/cms/events`);
@@ -69,93 +75,90 @@ function Dashboard() {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Failed");
+      if (!res.ok) throw new Error(data.message);
       showPopup(data.message || "Deleted", "success");
       if (type === "broadcast") fetchBroadcasts();
       if (type === "message") fetchMessages();
       if (type === "event") fetchEvents();
-    } catch (err) {
+    } catch {
       showPopup("Failed to delete", "error");
     }
   };
 
-  // =========================================================
-  // FIXED NATIVE AWS S3 UPLOAD - WORKS WITH NEW PYTHON CODE
-  // =========================================================
-  const handleNativeAWSUpload = async (uiEvent, setUrlCallback, setUploadingState, setProgressCallback) => {
+  // PURE S3 UPLOAD - NO CLOUDINARY
+  const handleS3Upload = async (uiEvent, setUrlCallback, setUploading, setProgress) => {
     const file = uiEvent.target.files[0];
     if (!file) return;
 
     try {
-      setUploadingState(true);
-      setProgressCallback(0);
+      setUploading(true);
+      setProgress(0);
 
-      // Force video/mp4 if browser doesn't give type (happens on iPhone)
-      const fileType = file.type || (file.name.endsWith(".mp4")? "video/mp4" : "video/mp4");
+      const fileType = file.type || "video/mp4";
 
+      // Step 1: Get presigned S3 URL from your FastAPI
       const signRes = await fetch(
         `${API_URL}/cms/sign-s3?filename=${encodeURIComponent(file.name)}&filetype=${encodeURIComponent(fileType)}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
       if (!signRes.ok) {
-        const errData = await signRes.json().catch(() => ({}));
-        throw new Error(errData.detail || "Could not get S3 signature");
+        const e = await signRes.json().catch(() => ({}));
+        throw new Error(e.detail || "Failed to get S3 URL");
       }
 
       const { uploadUrl, downloadUrl } = await signRes.json();
 
-      // XMLHttpRequest for progress
-      const xhr = new XMLHttpRequest();
-      xhr.open("PUT", uploadUrl, true);
-      xhr.setRequestHeader("Content-Type", fileType);
-
-      xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) {
-          setProgressCallback(Math.round((e.loaded * 100) / e.total));
-        }
-      };
-
+      // Step 2: Upload directly to S3 bucket via PUT
       await new Promise((resolve, reject) => {
-        xhr.onload = () => (xhr.status >= 200 && xhr.status < 300? resolve() : reject(new Error(`S3 rejected: ${xhr.status}`)));
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", uploadUrl, true);
+        xhr.setRequestHeader("Content-Type", fileType);
+
+        xhr.upload.onprogress = (ev) => {
+          if (ev.lengthComputable) setProgress(Math.round((ev.loaded * 100) / ev.total));
+        };
+
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) resolve();
+          else reject(new Error(`S3 error ${xhr.status}`));
+        };
         xhr.onerror = () => reject(new Error("Network error"));
-        xhr.onabort = () => reject(new Error("Cancelled"));
         xhr.send(file);
       });
 
       setUrlCallback(downloadUrl);
-      showPopup("Media attached!", "success");
+      showPopup("File uploaded to S3!", "success");
     } catch (err) {
       console.error(err);
-      showPopup(`Upload failed: ${err.message}`, "error");
+      showPopup(err.message, "error");
     } finally {
-      setUploadingState(false);
-      setProgressCallback(0);
+      setUploading(false);
+      setProgress(0);
       uiEvent.target.value = "";
     }
   };
 
   const handleBroadcast = async () => {
-    if (!broadcast.videoUrl) return showPopup("Upload video first!", "error");
-    if (!broadcast.title.trim()) return showPopup("Enter title!", "error");
+    if (!broadcast.videoUrl) return showPopup("Upload video first", "error");
+    if (!broadcast.title.trim()) return showPopup("Enter title", "error");
     try {
-      const payload = {...broadcast, views: 0, createdAt: new Date().toISOString() };
       const res = await fetch(`${API_URL}/cms/broadcast`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ ...broadcast, views: 0, createdAt: new Date().toISOString() }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
-      showPopup(data.message || "Published!", "success");
+      showPopup("Broadcast published!", "success");
       setBroadcast({ title: "", description: "", videoUrl: "" });
       fetchBroadcasts();
     } catch (err) { showPopup(err.message, "error"); }
   };
 
   const handleMessage = async () => {
-    if (!message.videoUrl) return showPopup("Upload video first!", "error");
-    if (!message.title.trim()) return showPopup("Enter title!", "error");
+    if (!message.videoUrl) return showPopup("Upload video first", "error");
+    if (!message.title.trim()) return showPopup("Enter title", "error");
     try {
       const res = await fetch(`${API_URL}/cms/message`, {
         method: "POST",
@@ -164,16 +167,16 @@ function Dashboard() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
-      showPopup(data.message || "Updated!", "success");
+      showPopup("Message published!", "success");
       setMessage({ title: "", videoUrl: "" });
       fetchMessages();
     } catch (err) { showPopup(err.message, "error"); }
   };
 
   const handleEvent = async () => {
-    if (!event.title.trim()) return showPopup("Enter event title!", "error");
-    if (!event.mediaUrl) return showPopup("Attach flyer!", "error");
-    if (!event.date) return showPopup("Select date!", "error");
+    if (!event.title.trim()) return showPopup("Enter title", "error");
+    if (!event.mediaUrl) return showPopup("Attach file", "error");
+    if (!event.date) return showPopup("Select date", "error");
     try {
       const res = await fetch(`${API_URL}/cms/event`, {
         method: "POST",
@@ -182,7 +185,7 @@ function Dashboard() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
-      showPopup(data.message || "Event added!", "success");
+      showPopup("Event added!", "success");
       setEvent({ title: "", mediaUrl: "", date: "" });
       fetchEvents();
     } catch (err) { showPopup(err.message, "error"); }
@@ -192,41 +195,34 @@ function Dashboard() {
     <div className="bg-black min-h-screen text-white p-8 relative">
       {notification.show && (
         <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50">
-          <div className={`px-6 py-4 rounded-xl shadow-2xl border flex items-center gap-3 backdrop-blur-md ${
-            notification.type === "success"? "bg-green-500/20 border-green-500 text-green-300"
-            : notification.type === "error"? "bg-red-500/20 border-red-500 text-red-300"
-            : "bg-purple-500/20 border-purple-500 text-purple-300"}`}>
-            <span className="text-xl">{notification.type === "success"? "🏆" : notification.type === "error"? "⚠️" : "ℹ️"}</span>
-            <p className="font-semibold text-sm tracking-wide">{notification.message}</p>
+          <div className={`px-6 py-4 rounded-xl shadow-2xl border flex items-center gap-3 backdrop-blur-md ${notification.type === "success" ? "bg-green-500/20 border-green-500 text-green-300" : "bg-red-500/20 border-red-500 text-red-300"}`}>
+            <p className="font-semibold text-sm">{notification.message}</p>
           </div>
         </div>
       )}
 
       <div className="flex justify-between items-center mb-10">
         <h1 className="text-4xl font-bold text-purple-400">LFCC Admin Dashboard</h1>
-        <button onClick={logout} className="bg-red-500 hover:bg-red-600 transition px-5 py-3 rounded-xl font-medium">Logout</button>
+        <button onClick={logout} className="bg-red-500 hover:bg-red-600 px-5 py-3 rounded-xl">Logout</button>
       </div>
 
       <div className="grid gap-10">
         <section className="bg-zinc-900 p-6 rounded-2xl border border-zinc-800">
           <h2 className="text-2xl font-bold mb-4 text-purple-300">Sermon Broadcasts</h2>
-          <input placeholder="Sermon Title" value={broadcast.title} onChange={(e) => setBroadcast({...broadcast, title: e.target.value })} className="w-full p-3 bg-zinc-800 border border-zinc-700 mb-3 rounded-xl focus:outline-none focus:border-purple-500" />
-          <textarea placeholder="Sermon Description" value={broadcast.description} onChange={(e) => setBroadcast({...broadcast, description: e.target.value })} className="w-full p-3 bg-zinc-800 border border-zinc-700 mb-3 rounded-xl min-h-[100px] focus:outline-none focus:border-purple-500" />
+          <input placeholder="Sermon Title" value={broadcast.title} onChange={(e) => setBroadcast({ ...broadcast, title: e.target.value })} className="w-full p-3 bg-zinc-800 border border-zinc-700 mb-3 rounded-xl" />
+          <textarea placeholder="Description" value={broadcast.description} onChange={(e) => setBroadcast({ ...broadcast, description: e.target.value })} className="w-full p-3 bg-zinc-800 border border-zinc-700 mb-3 rounded-xl min-h-[100px]" />
           <div className="flex flex-col gap-3 mb-5">
             <div className="flex gap-3 items-center flex-wrap">
-              <label className="bg-purple-600 hover:bg-purple-700 px-5 py-3 rounded-xl text-sm font-semibold cursor-pointer transition shadow-lg">
-                {isUploadingBroadcast? "Uploading..." : "📁 Choose Sermon Video"}
-                <input type="file" accept="video/*" className="hidden" disabled={isUploadingBroadcast} onChange={(e) => handleNativeAWSUpload(e, (url) => setBroadcast({...broadcast, videoUrl: url }), setIsUploadingBroadcast, setBroadcastProgress)} />
+              <label className="bg-purple-600 hover:bg-purple-700 px-5 py-3 rounded-xl text-sm font-semibold cursor-pointer">
+                {isUploadingBroadcast ? `Uploading ${broadcastProgress}%` : "📁 Choose Sermon Video (S3)"}
+                <input type="file" accept="video/*" className="hidden" disabled={isUploadingBroadcast} onChange={(e) => handleS3Upload(e, (url) => setBroadcast({ ...broadcast, videoUrl: url }), setIsUploadingBroadcast, setBroadcastProgress)} />
               </label>
-              {broadcast.videoUrl && <span className="text-green-400 text-sm">✓ Video Attached - {broadcast.videoUrl.split('/').pop()}</span>}
+              {broadcast.videoUrl && <span className="text-green-400 text-sm">✓ S3: {broadcast.videoUrl.split("/").pop()}</span>}
             </div>
-            {isUploadingBroadcast && (
-              <div className="w-full"><div className="flex justify-between text-xs text-zinc-400 mb-1"><span>Uploading...</span><span>{broadcastProgress}%</span></div><div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden"><div className="bg-purple-500 h-full rounded-full transition-all" style={{ width: `${broadcastProgress}%` }} /></div></div>
-            )}
+            {isUploadingBroadcast && <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden"><div className="bg-purple-500 h-full rounded-full" style={{ width: `${broadcastProgress}%` }} /></div>}
           </div>
           <button onClick={handleBroadcast} disabled={isUploadingBroadcast} className="bg-purple-500 hover:bg-purple-600 disabled:opacity-50 px-5 py-3 rounded-xl font-semibold">Publish Sermon</button>
           <div className="mt-6 space-y-2">
-            <h3 className="text-sm font-semibold text-zinc-400 mb-3">Active Broadcasts</h3>
             {broadcasts.map((b) => (
               <div key={b._id} className="flex justify-between items-center bg-zinc-800 p-4 rounded-xl gap-4">
                 <div className="min-w-0"><p className="font-bold truncate">{b.title}</p><p className="text-sm text-zinc-400">Views: {b.views || 0}</p></div>
@@ -238,16 +234,16 @@ function Dashboard() {
 
         <section className="bg-zinc-900 p-6 rounded-2xl border border-zinc-800">
           <h2 className="text-2xl font-bold mb-4 text-purple-300">Message of the Week</h2>
-          <input placeholder="Message Title" value={message.title} onChange={(e) => setMessage({...message, title: e.target.value })} className="w-full p-3 bg-zinc-800 border border-zinc-700 mb-3 rounded-xl" />
+          <input placeholder="Message Title" value={message.title} onChange={(e) => setMessage({ ...message, title: e.target.value })} className="w-full p-3 bg-zinc-800 border border-zinc-700 mb-3 rounded-xl" />
           <div className="flex flex-col gap-3 mb-5">
             <div className="flex gap-3 items-center flex-wrap">
               <label className="bg-purple-600 hover:bg-purple-700 px-5 py-3 rounded-xl text-sm font-semibold cursor-pointer">
-                {isUploadingMessage? "Uploading..." : "📁 Choose Video"}
-                <input type="file" accept="video/*" className="hidden" disabled={isUploadingMessage} onChange={(e) => handleNativeAWSUpload(e, (url) => setMessage({...message, videoUrl: url }), setIsUploadingMessage, setMessageProgress)} />
+                {isUploadingMessage ? `Uploading ${messageProgress}%` : "📁 Choose Video (S3)"}
+                <input type="file" accept="video/*" className="hidden" disabled={isUploadingMessage} onChange={(e) => handleS3Upload(e, (url) => setMessage({ ...message, videoUrl: url }), setIsUploadingMessage, setMessageProgress)} />
               </label>
               {message.videoUrl && <span className="text-green-400 text-sm">✓ Attached</span>}
             </div>
-            {isUploadingMessage && <div className="w-full"><div className="flex justify-between text-xs text-zinc-400 mb-1"><span>{messageProgress}%</span></div><div className="w-full h-2 bg-zinc-800 rounded-full"><div className="bg-purple-500 h-full rounded-full" style={{ width: `${messageProgress}%` }} /></div></div>}
+            {isUploadingMessage && <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden"><div className="bg-purple-500 h-full rounded-full" style={{ width: `${messageProgress}%` }} /></div>}
           </div>
           <button onClick={handleMessage} disabled={isUploadingMessage} className="bg-purple-500 hover:bg-purple-600 px-5 py-3 rounded-xl font-semibold">Publish Message</button>
           <div className="mt-6 space-y-2">
@@ -262,17 +258,17 @@ function Dashboard() {
 
         <section className="bg-zinc-900 p-6 rounded-2xl border border-zinc-800">
           <h2 className="text-2xl font-bold mb-4 text-purple-300">Church Events</h2>
-          <input placeholder="Event Title" value={event.title} onChange={(e) => setEvent({...event, title: e.target.value })} className="w-full p-3 bg-zinc-800 border border-zinc-700 mb-3 rounded-xl" />
-          <input type="date" value={event.date} onChange={(e) => setEvent({...event, date: e.target.value })} className="w-full p-3 bg-zinc-800 border border-zinc-700 mb-3 rounded-xl" />
+          <input placeholder="Event Title" value={event.title} onChange={(e) => setEvent({ ...event, title: e.target.value })} className="w-full p-3 bg-zinc-800 border border-zinc-700 mb-3 rounded-xl" />
+          <input type="date" value={event.date} onChange={(e) => setEvent({ ...event, date: e.target.value })} className="w-full p-3 bg-zinc-800 border border-zinc-700 mb-3 rounded-xl" />
           <div className="flex flex-col gap-3 mb-5">
             <div className="flex gap-3 items-center flex-wrap">
               <label className="bg-purple-600 hover:bg-purple-700 px-5 py-3 rounded-xl text-sm font-semibold cursor-pointer">
-                {isUploadingEvent? "Uploading..." : "📁 Choose Flyer / Video"}
-                <input type="file" accept="image/*,video/*" className="hidden" disabled={isUploadingEvent} onChange={(e) => handleNativeAWSUpload(e, (url) => setEvent({...event, mediaUrl: url }), setIsUploadingEvent, setEventProgress)} />
+                {isUploadingEvent ? `Uploading ${eventProgress}%` : "📁 Choose Flyer / Video (S3)"}
+                <input type="file" accept="image/*,video/*" className="hidden" disabled={isUploadingEvent} onChange={(e) => handleS3Upload(e, (url) => setEvent({ ...event, mediaUrl: url }), setIsUploadingEvent, setEventProgress)} />
               </label>
               {event.mediaUrl && <span className="text-green-400 text-sm">✓ Attached</span>}
             </div>
-            {isUploadingEvent && <div className="w-full"><div className="flex justify-between text-xs text-zinc-400 mb-1"><span>{eventProgress}%</span></div><div className="w-full h-2 bg-zinc-800 rounded-full"><div className="bg-purple-500 h-full rounded-full" style={{ width: `${eventProgress}%` }} /></div></div>}
+            {isUploadingEvent && <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden"><div className="bg-purple-500 h-full rounded-full" style={{ width: `${eventProgress}%` }} /></div>}
           </div>
           <button onClick={handleEvent} disabled={isUploadingEvent} className="bg-purple-500 hover:bg-purple-600 px-5 py-3 rounded-xl font-semibold">Add Event</button>
           <div className="mt-6 space-y-2">
