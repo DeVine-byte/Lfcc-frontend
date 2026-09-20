@@ -5,32 +5,28 @@ import { API_URL } from "../config";
 function Broadcast() {
   const { id } = useParams();
   const navigate = useNavigate();
-
   const [broadcast, setBroadcast] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [mobileMenu, setMobileMenu] = useState(false);
 
   useEffect(() => {
-    if (id) {
-      fetchBroadcast();
-    }
+    if (id) fetchBroadcast();
   }, [id]);
 
   const fetchBroadcast = async () => {
-    try { 
+    try {
       setLoading(true);
       const res = await fetch(`${API_URL}/cms/broadcast/${id}`);
       if (!res.ok) throw new Error("Failed to fetch broadcast");
-      
       const data = await res.json();
       if (data.message === "Broadcast not found") {
         setError("Broadcast not found");
         return;
       }
       setBroadcast(data);
-      
-      await fetch(`${API_URL}/cms/broadcast/views/${id}`, { method: "PUT" });
+      // fire and forget
+      fetch(`${API_URL}/cms/broadcast/views/${id}`, { method: "PUT" }).catch(()=>{});
     } catch (err) {
       console.log(err);
       setError("Something went wrong while loading this broadcast.");
@@ -71,24 +67,23 @@ function Broadcast() {
     );
   }
 
+  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+  const encodedShareUrl = encodeURIComponent(shareUrl);
+
   return (
     <div className="bg-black min-h-screen text-white">
-      {/* ================= NAVBAR ================= */}
       <nav className="border-b border-zinc-800 bg-black/90 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
             <img src="/logo.png" alt="LFCC Logo" className="w-11 h-11 rounded-full object-cover" />
             <h1 className="text-purple-400 font-bold text-lg md:text-xl">LFCC Broadcast</h1>
           </Link>
-
           <div className="hidden md:flex items-center gap-8 text-zinc-300">
             <Link to="/" className="hover:text-purple-400 transition">Home</Link>
             <Link to="/about" className="hover:text-purple-400 transition">About</Link>
           </div>
-
           <button onClick={() => setMobileMenu(!mobileMenu)} className="md:hidden text-3xl">☰</button>
         </div>
-
         {mobileMenu && (
           <div className="md:hidden border-t border-zinc-800 px-4 py-4 flex flex-col gap-4 text-zinc-300">
             <Link to="/" onClick={() => setMobileMenu(false)} className="hover:text-purple-400 transition">Home</Link>
@@ -97,40 +92,43 @@ function Broadcast() {
         )}
       </nav>
 
-      {/* ================= MAIN ================= */}
       <section className="max-w-6xl mx-auto px-4 py-10">
         <div className="mb-8">
           <p className="text-purple-400 uppercase tracking-widest mb-3">Broadcast Message</p>
           <h1 className="text-4xl md:text-5xl font-bold leading-tight">{broadcast.title}</h1>
         </div>
 
-        {/* NATIVE HIGH PERFORMANCE STREAMING CONTAINER */}
-        <div className="rounded-3xl overflow-hidden border border-zinc-800 mb-8 shadow-2xl bg-zinc-950 aspect-video flex items-center justify-center">
-          <video 
-            key={broadcast.videoUrl}
-            controls 
-            className="w-full h-full object-contain"
-            preload="metadata"
-            playsInline
-            controlsList="nodownload"
-          >
-            {/* BUGFIX: Appending #t=0.1 forces the device engine to render the frame at 0.1 seconds as a beautiful thumbnail image */}
-            <source src={`${broadcast.videoUrl}#t=0.1`} type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
+        {/* FIXED VIDEO PLAYER */}
+        <div className="rounded-3xl overflow-hidden border border-zinc-800 mb-8 shadow-2xl bg-zinc-950 aspect-video">
+          {broadcast.videoUrl ? (
+            <video
+              key={broadcast.videoUrl}
+              controls
+              className="w-full h-full object-contain bg-black"
+              preload="metadata"
+              playsInline
+              poster={broadcast.thumbnailUrl || broadcast.thumbnail || broadcast.poster || ""}
+              crossOrigin="anonymous"
+              onError={(e) => console.log("Video error:", e)}
+            >
+              <source src={broadcast.videoUrl} type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-zinc-500">No video URL found</div>
+          )}
         </div>
 
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 mb-8">
           <h2 className="text-2xl font-bold mb-4">About This Message</h2>
-          <p className="text-zinc-400 leading-relaxed">{broadcast.description}</p>
+          <p className="text-zinc-400 leading-relaxed whitespace-pre-wrap">{broadcast.description}</p>
         </div>
 
         <div className="flex flex-wrap gap-4">
-          {/* FIXED: Repaired broken syntax routing parameters */}
-          <a href={`https://wa.me{encodeURIComponent(window.location.href)}`} target="_blank" rel="noreferrer" className="bg-green-500 hover:bg-green-600 transition px-6 py-3 rounded-xl font-semibold">
+          <a href={`https://wa.me/?text=${encodedShareUrl}`} target="_blank" rel="noreferrer" className="bg-green-500 hover:bg-green-600 transition px-6 py-3 rounded-xl font-semibold">
             Share On WhatsApp
           </a>
-          <a href={`https://facebook.com{encodeURIComponent(window.location.href)}`} target="_blank" rel="noreferrer" className="bg-blue-600 hover:bg-blue-700 transition px-6 py-3 rounded-xl font-semibold">
+          <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodedShareUrl}`} target="_blank" rel="noreferrer" className="bg-blue-600 hover:bg-blue-700 transition px-6 py-3 rounded-xl font-semibold">
             Share On Facebook
           </a>
           <button onClick={copyLink} className="bg-purple-600 hover:bg-purple-700 transition px-6 py-3 rounded-xl font-semibold">
